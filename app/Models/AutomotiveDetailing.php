@@ -1,0 +1,58 @@
+<?php
+
+namespace App\Models;
+
+use App\Enums\DetailingStatus;
+use Database\Factories\AutomotiveDetailingFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class AutomotiveDetailing extends Model
+{
+    /** @use HasFactory<AutomotiveDetailingFactory> */
+    use HasFactory;
+
+    protected $fillable = [
+        'name',
+        'slug',
+        'description',
+        'phone',
+        'whatsapp',
+        'email',
+        'postal_code',
+        'street',
+        'number',
+        'complement',
+        'neighborhood',
+        'city',
+        'state',
+        'latitude',
+        'longitude',
+        'status',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'status' => DetailingStatus::class,
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
+        ];
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
+    public function services(): HasMany
+    {
+        return $this->hasMany(Service::class);
+    }
+
+    public function activeServices(): HasMany
+    {
+        return $this->services()->where('active', true);
+    }
+}
