@@ -72,8 +72,29 @@ class AutomotiveDetailing extends Model
             ->withMin('activeServices', 'price_cents');
     }
 
+    public function isApproved(): bool
+    {
+        return $this->status === DetailingStatus::Approved;
+    }
+
+    protected function streetAddress(): Attribute
+    {
+        return Attribute::get(fn () => collect([
+            "{$this->street}, {$this->number}",
+            $this->complement,
+            $this->neighborhood,
+        ])->filter()->implode(' – '));
+    }
+
     protected function location(): Attribute
     {
         return Attribute::get(fn () => "{$this->neighborhood}, {$this->city} – {$this->state}");
+    }
+
+    protected function whatsappUrl(): Attribute
+    {
+        return Attribute::get(fn () => $this->whatsapp
+            ? 'https://wa.me/55'.preg_replace('/\D/', '', $this->whatsapp)
+            : null);
     }
 }

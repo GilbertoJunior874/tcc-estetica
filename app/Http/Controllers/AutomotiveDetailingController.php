@@ -18,4 +18,12 @@ class AutomotiveDetailingController extends Controller
         ]);
     }
 
+    public function show(AutomotiveDetailing $detailing): View
+    {
+        abort_unless($detailing->isApproved(), 404);
+
+        $detailing->load(['activeServices' => fn ($query) => $query->orderBy('price_cents')]);
+
+        return view('detailings.show', ['detailing' => $detailing]);
+    }
 }

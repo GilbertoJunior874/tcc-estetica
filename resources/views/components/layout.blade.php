@@ -15,7 +15,7 @@
     <body class="flex min-h-screen flex-col bg-zinc-50 font-sans text-zinc-900 antialiased">
         <header class="border-b border-zinc-200 bg-white">
             <div class="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-                <a href="{{ route('detailings.index') }}" class="flex items-center gap-2 font-semibold tracking-tight">
+                <a href="{{ route('home') }}" class="flex items-center gap-2 font-semibold tracking-tight">
                     <span class="grid size-8 place-items-center rounded-md bg-brand-700 text-sm font-bold text-white">EP</span>
                     <span>{{ config('app.name') }}</span>
                 </a>

@@ -2,6 +2,8 @@
 
 Diretório público de estéticas automotivas. O visitante encontra estabelecimentos, vê os serviços oferecidos, o que está incluído e o preço de cada um, e entra em contato direto com a estética. Não há cadastro de visitante, pagamento ou agendamento pela plataforma.
 
+Estado atual: catálogo público (página inicial, listagem e página de cada estética) com dados fictícios de desenvolvimento.
+
 ## Stack
 
 - PHP 8.4 · Laravel 13 · Blade
@@ -49,6 +51,8 @@ docker compose exec app php artisan db:seed
 docker compose exec app php artisan migrate:fresh --seed
 ```
 
+O seeder cria 10 estéticas fictícias em Campinas (SP), cada uma com 4 a 10 serviços. Todas ficam com status aprovado.
+
 Para acessar o banco pelo terminal:
 
 ```bash
@@ -91,3 +95,11 @@ docker compose exec app php artisan route:list
 docker compose exec app composer <comando>
 docker compose run --rm node npm <comando>
 ```
+
+## Rotas públicas
+
+| Rota               | Descrição                                      |
+|--------------------|------------------------------------------------|
+| `/`                | Página inicial com algumas estéticas           |
+| `/esteticas`       | Listagem das estéticas aprovadas               |
+| `/esteticas/{slug}`| Página da estética com serviços e preços       |

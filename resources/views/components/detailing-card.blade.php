@@ -3,7 +3,7 @@
 <article class="flex h-full flex-col rounded-lg border border-zinc-200 bg-white p-5 transition-shadow hover:shadow-md">
     <div class="flex-1">
         <h3 class="text-lg font-semibold leading-snug">
-            {{ $detailing->name }}
+            <a href="{{ route('detailings.show', $detailing) }}" class="hover:text-brand-700">{{ $detailing->name }}</a>
         </h3>
         <p class="mt-1 text-sm text-zinc-500">{{ $detailing->location }}</p>
 
@@ -32,5 +32,9 @@
                 <span class="text-zinc-500">Sem serviços cadastrados</span>
             @endif
         </div>
+
+        <a href="{{ route('detailings.show', $detailing) }}" class="shrink-0 rounded-md bg-brand-700 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-900">
+            Ver detalhes
+        </a>
     </div>
 </article>
