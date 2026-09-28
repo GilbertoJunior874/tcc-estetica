@@ -1,0 +1,93 @@
+name: estetica-automotiva
+
+services:
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile.fpm
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: estetica_php
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - estetica
+
+  nginx:
+    image: nginx:alpine
+    container_name: estetica_nginx
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8000}:80"
+    volumes:
+      - .:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - php
+    networks:
+      - estetica
+
+  node:
+    image: node:22-alpine
+    container_name: estetica_node
+    restart: unless-stopped
+    user: "${UID:-1000}:${GID:-1000}"
+    working_dir: /var/www/html
+    command: ["npm", "run", "dev"]
+    ports:
+      - "${VITE_PORT:-5173}:5173"
+    volumes:
+      - .:/var/www/html
+    networks:
+      - estetica
+
+  db:
+    image: postgres:17-alpine
+    container_name: estetica_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-estetica}
+      POSTGRES_USER: ${DB_USERNAME:-estetica}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    ports:
+      - "${FORWARD_DB_PORT:-5432}:5432"
+    volumes:
+      - estetica_pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/create-testing-database.sql:/docker-entrypoint-initdb.d/create-testing-database.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - estetica
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: estetica_pgadmin
+    restart: unless-stopped
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+    volumes:
+      - estetica_pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - db
+    networks:
+      - estetica
+
+volumes:
+  estetica_pgdata:
+  estetica_pgadmin_data:
+
+networks:
+  estetica:
