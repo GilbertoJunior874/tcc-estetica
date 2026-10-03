@@ -26,6 +26,20 @@
                         'bg-brand-50 text-brand-700' => request()->routeIs('detailings.*'),
                         'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900' => ! request()->routeIs('detailings.*'),
                     ])>Estéticas</a>
+
+                    @auth
+                        <a href="{{ route('owner.dashboard') }}" @class([
+                            'rounded-md px-3 py-2 transition-colors',
+                            'bg-brand-50 text-brand-700' => request()->routeIs('owner.*'),
+                            'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900' => ! request()->routeIs('owner.*'),
+                        ])>Painel</a>
+                        <form method="post" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="rounded-md px-3 py-2 text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900">Sair</button>
+                        </form>
+                    @else
+                        <a href="{{ route('login') }}" class="rounded-md px-3 py-2 text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900">Para estéticas</a>
+                    @endauth
                 </nav>
             </div>
         </header>
