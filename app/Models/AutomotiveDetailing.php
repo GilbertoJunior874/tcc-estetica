@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class AutomotiveDetailing extends Model
 {
@@ -33,7 +34,10 @@ class AutomotiveDetailing extends Model
         'state',
         'latitude',
         'longitude',
-        'status',
+    ];
+
+    protected $attributes = [
+        'status' => 'pending',
     ];
 
     protected function casts(): array
@@ -43,6 +47,25 @@ class AutomotiveDetailing extends Model
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $detailing) {
+            $detailing->slug ??= static::uniqueSlug($detailing->name);
+        });
+    }
+
+    private static function uniqueSlug(string $name): string
+    {
+        $base = Str::slug($name) ?: 'estetica';
+        $slug = $base;
+
+        for ($suffix = 2; static::where('slug', $slug)->exists(); $suffix++) {
+            $slug = "{$base}-{$suffix}";
+        }
+
+        return $slug;
     }
 
     public function getRouteKeyName(): string

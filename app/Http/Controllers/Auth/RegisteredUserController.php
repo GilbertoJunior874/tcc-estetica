@@ -29,6 +29,6 @@ class RegisteredUserController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->route('owner.dashboard');
+        return redirect()->route('owner.detailing.create');
     }
 }

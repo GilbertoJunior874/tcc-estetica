@@ -20,7 +20,7 @@ class AuthenticationTest extends TestCase
             'email' => 'marina@example.com',
             'password' => 'senha-segura-123',
             'password_confirmation' => 'senha-segura-123',
-        ])->assertRedirect(route('owner.dashboard'));
+        ])->assertRedirect(route('owner.detailing.create'));
 
         $user = User::firstWhere('email', 'marina@example.com');
 

@@ -5,6 +5,8 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\AutomotiveDetailingController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Owner\DashboardController;
+use App\Http\Controllers\Owner\DetailingController;
+use App\Models\AutomotiveDetailing;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
@@ -24,5 +26,7 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('painel')->name('owner.')->group(function () {
         Route::get('/', DashboardController::class)->name('dashboard');
+        Route::get('/estetica/cadastrar', [DetailingController::class, 'create'])->name('detailing.create');
+        Route::post('/estetica', [DetailingController::class, 'store'])->name('detailing.store')->can('create', AutomotiveDetailing::class);
     });
 });

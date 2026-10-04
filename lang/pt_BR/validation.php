@@ -19,7 +19,6 @@ return [
         'numeric' => 'O campo :attribute deve ser no mínimo :min.',
         'string' => 'O campo :attribute deve ter pelo menos :min caracteres.',
     ],
-    'prohibited' => 'O campo :attribute não pode ser enviado.',
     'regex' => 'O formato de :attribute é inválido.',
     'required' => 'O campo :attribute é obrigatório.',
     'required_unless' => 'O campo :attribute é obrigatório.',
