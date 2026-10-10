@@ -4,8 +4,10 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\AutomotiveDetailingController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Owner\BusinessHoursController;
 use App\Http\Controllers\Owner\DashboardController;
 use App\Http\Controllers\Owner\DetailingController;
+use App\Http\Middleware\EnsureDetailingRegistered;
 use App\Models\AutomotiveDetailing;
 use Illuminate\Support\Facades\Route;
 
@@ -28,5 +30,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/', DashboardController::class)->name('dashboard');
         Route::get('/estetica/cadastrar', [DetailingController::class, 'create'])->name('detailing.create');
         Route::post('/estetica', [DetailingController::class, 'store'])->name('detailing.store')->can('create', AutomotiveDetailing::class);
+
+        Route::middleware(EnsureDetailingRegistered::class)->group(function () {
+            Route::get('/estetica', [DetailingController::class, 'edit'])->name('detailing.edit');
+            Route::put('/estetica', [DetailingController::class, 'update'])->name('detailing.update');
+            Route::get('/horarios', [BusinessHoursController::class, 'edit'])->name('hours.edit');
+            Route::put('/horarios', [BusinessHoursController::class, 'update'])->name('hours.update');
+        });
     });
 });

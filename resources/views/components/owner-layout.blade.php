@@ -1,9 +1,12 @@
 @props(['title'])
 
 @php
-    $links = [
-        ['owner.dashboard', 'owner.dashboard', 'Visão geral'],
-    ];
+    $links = [['owner.dashboard', 'owner.dashboard', 'Visão geral']];
+
+    if (auth()->user()->automotiveDetailing) {
+        $links[] = ['owner.detailing.edit', 'owner.detailing.edit', 'Dados da estética'];
+        $links[] = ['owner.hours.edit', 'owner.hours.*', 'Horários'];
+    }
 @endphp
 
 <x-layout :title="$title">

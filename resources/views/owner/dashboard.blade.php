@@ -23,7 +23,12 @@
         </section>
 
         <section class="mt-6 rounded-lg border border-zinc-200 bg-white p-5">
-            <h2 class="font-semibold">Dados enviados</h2>
+            <div class="flex items-baseline justify-between gap-4">
+                <h2 class="font-semibold">Dados da estética</h2>
+                @can('update', $detailing)
+                    <a href="{{ route('owner.detailing.edit') }}" class="text-sm font-medium text-brand-700 hover:text-brand-900">Editar</a>
+                @endcan
+            </div>
             <dl class="mt-4 grid gap-4 text-sm sm:grid-cols-2">
                 <div>
                     <dt class="text-zinc-500">Endereço</dt>
@@ -41,6 +46,20 @@
                     @endif
                 </div>
             </dl>
+        </section>
+
+        <section class="mt-6 rounded-lg border border-zinc-200 bg-white p-5">
+            <div class="flex items-baseline justify-between gap-4">
+                <h2 class="font-semibold">Horários de funcionamento</h2>
+                @can('update', $detailing)
+                    <a href="{{ route('owner.hours.edit') }}" class="text-sm font-medium text-brand-700 hover:text-brand-900">Editar</a>
+                @endcan
+            </div>
+            @if ($detailing->businessHours->isEmpty())
+                <p class="mt-3 text-sm text-zinc-600">Os horários de funcionamento ainda não foram informados.</p>
+            @else
+                <x-business-hours :hours="$detailing->businessHours" class="mt-4" />
+            @endif
         </section>
     @else
         <h1 class="text-2xl font-bold tracking-tight">Olá, {{ auth()->user()->name }}</h1>

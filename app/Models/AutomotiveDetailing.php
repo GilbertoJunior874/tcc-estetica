@@ -83,6 +83,11 @@ class AutomotiveDetailing extends Model
         return $this->hasMany(Service::class);
     }
 
+    public function businessHours(): HasMany
+    {
+        return $this->hasMany(BusinessHour::class)->orderBy('day_of_week');
+    }
+
     public function activeServices(): HasMany
     {
         return $this->services()->where('active', true);
