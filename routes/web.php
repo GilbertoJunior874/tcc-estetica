@@ -7,6 +7,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Owner\BusinessHoursController;
 use App\Http\Controllers\Owner\DashboardController;
 use App\Http\Controllers\Owner\DetailingController;
+use App\Http\Controllers\Owner\ServiceController;
 use App\Http\Middleware\EnsureDetailingRegistered;
 use App\Models\AutomotiveDetailing;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +37,12 @@ Route::middleware('auth')->group(function () {
             Route::put('/estetica', [DetailingController::class, 'update'])->name('detailing.update');
             Route::get('/horarios', [BusinessHoursController::class, 'edit'])->name('hours.edit');
             Route::put('/horarios', [BusinessHoursController::class, 'update'])->name('hours.update');
+
+            Route::resource('servicos', ServiceController::class)
+                ->except('show')
+                ->parameters(['servicos' => 'service'])
+                ->names('services');
+            Route::patch('/servicos/{service}/status', [ServiceController::class, 'toggle'])->name('services.toggle');
         });
     });
 });

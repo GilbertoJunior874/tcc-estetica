@@ -10,8 +10,11 @@ class DashboardController extends Controller
 {
     public function __invoke(Request $request): View
     {
-        return view('owner.dashboard', [
-            'detailing' => $request->user()->automotiveDetailing,
+        $detailing = $request->user()->automotiveDetailing?->loadCount([
+            'services',
+            'services as active_services_count' => fn ($query) => $query->where('active', true),
         ]);
+
+        return view('owner.dashboard', ['detailing' => $detailing]);
     }
 }

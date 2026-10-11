@@ -6,6 +6,7 @@
     if (auth()->user()->automotiveDetailing) {
         $links[] = ['owner.detailing.edit', 'owner.detailing.edit', 'Dados da estética'];
         $links[] = ['owner.hours.edit', 'owner.hours.*', 'Horários'];
+        $links[] = ['owner.services.index', 'owner.services.*', 'Serviços'];
     }
 @endphp
 

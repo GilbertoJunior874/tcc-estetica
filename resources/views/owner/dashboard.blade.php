@@ -50,6 +50,21 @@
 
         <section class="mt-6 rounded-lg border border-zinc-200 bg-white p-5">
             <div class="flex items-baseline justify-between gap-4">
+                <h2 class="font-semibold">Serviços</h2>
+                <a href="{{ route('owner.services.index') }}" class="text-sm font-medium text-brand-700 hover:text-brand-900">Gerenciar</a>
+            </div>
+            <p class="mt-3 text-sm text-zinc-600">
+                @if ($detailing->services_count === 0)
+                    Nenhum serviço cadastrado ainda. Cadastre os serviços com preço e o que está incluído.
+                @else
+                    {{ trans_choice('{1} 1 serviço cadastrado|[2,*] :count serviços cadastrados', $detailing->services_count) }},
+                    {{ trans_choice('{0} nenhum ativo|{1} 1 ativo|[2,*] :count ativos', $detailing->active_services_count) }}.
+                @endif
+            </p>
+        </section>
+
+        <section class="mt-6 rounded-lg border border-zinc-200 bg-white p-5">
+            <div class="flex items-baseline justify-between gap-4">
                 <h2 class="font-semibold">Horários de funcionamento</h2>
                 @can('update', $detailing)
                     <a href="{{ route('owner.hours.edit') }}" class="text-sm font-medium text-brand-700 hover:text-brand-900">Editar</a>
