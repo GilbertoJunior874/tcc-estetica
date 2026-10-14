@@ -68,6 +68,13 @@
                         @endif
                     </dl>
 
+                    @if ($detailing->businessHours->isNotEmpty())
+                        <div class="mt-5 border-t border-zinc-100 pt-4">
+                            <h3 class="text-sm text-zinc-500">Horário de funcionamento</h3>
+                            <x-business-hours :hours="$detailing->businessHours" class="mt-2" />
+                        </div>
+                    @endif
+
                     @if ($detailing->whatsapp_url)
                         <a href="{{ $detailing->whatsapp_url }}" target="_blank" rel="noopener" class="mt-5 flex w-full items-center justify-center rounded-md bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-700">
                             Conversar no WhatsApp

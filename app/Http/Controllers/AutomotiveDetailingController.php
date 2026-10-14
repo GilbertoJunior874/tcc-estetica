@@ -22,7 +22,7 @@ class AutomotiveDetailingController extends Controller
     {
         abort_unless($detailing->isApproved(), 404);
 
-        $detailing->load(['activeServices' => fn ($query) => $query->orderBy('price_cents')]);
+        $detailing->load(['activeServices' => fn ($query) => $query->orderBy('price_cents'), 'businessHours']);
 
         return view('detailings.show', ['detailing' => $detailing]);
     }

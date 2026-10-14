@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class AutomotiveDetailing extends Model
 {
@@ -32,7 +34,10 @@ class AutomotiveDetailing extends Model
         'state',
         'latitude',
         'longitude',
-        'status',
+    ];
+
+    protected $attributes = [
+        'status' => 'pending',
     ];
 
     protected function casts(): array
@@ -44,14 +49,43 @@ class AutomotiveDetailing extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::creating(function (self $detailing) {
+            $detailing->slug ??= static::uniqueSlug($detailing->name);
+        });
+    }
+
+    private static function uniqueSlug(string $name): string
+    {
+        $base = Str::slug($name) ?: 'estetica';
+        $slug = $base;
+
+        for ($suffix = 2; static::where('slug', $slug)->exists(); $suffix++) {
+            $slug = "{$base}-{$suffix}";
+        }
+
+        return $slug;
+    }
+
     public function getRouteKeyName(): string
     {
         return 'slug';
     }
 
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public function services(): HasMany
     {
         return $this->hasMany(Service::class);
+    }
+
+    public function businessHours(): HasMany
+    {
+        return $this->hasMany(BusinessHour::class)->orderBy('day_of_week');
     }
 
     public function activeServices(): HasMany
