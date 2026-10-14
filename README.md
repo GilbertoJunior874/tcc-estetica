@@ -28,9 +28,11 @@ Somente Docker com Docker Compose v2. PHP, Composer, Node.js e PostgreSQL rodam 
 | `db`      | `postgres:17-alpine`          | Banco `estetica` e banco de testes `estetica_testing` | `5432` |
 | `pgadmin` | `dpage/pgadmin4`              | Interface web opcional para o banco                   | `5050` |
 
-Os containers `php` e `node` usam o UID/GID `1000` por padrão para que os arquivos gerados pertençam ao seu usuário. Se o seu for diferente, exporte `UID` e `GID` antes do build. As portas podem ser alteradas com `APP_PORT`, `VITE_PORT`, `FORWARD_DB_PORT` e `PGADMIN_PORT`.
+Os containers `php` e `node` usam o UID/GID `1000` por padrão para que os arquivos gerados pertençam ao seu usuário. Se o seu for diferente, defina `UID` e `GID` no `.env` antes do build. As portas podem ser alteradas com `APP_PORT`, `VITE_PORT`, `FORWARD_DB_PORT` e `PGADMIN_PORT`.
 
 ## Primeira execução
+
+Depois de clonar o repositório:
 
 ```bash
 cp .env.example .env
@@ -42,7 +44,31 @@ docker compose up -d
 docker compose exec php php artisan migrate --seed
 ```
 
-Acesse http://localhost:8000.
+Acesse http://localhost:8000. Para entrar na área da estética, use uma das contas criadas pelo seeder (veja [Banco de dados](#banco-de-dados)).
+
+## Atualizando um clone existente
+
+Sempre que baixar novas alterações:
+
+```bash
+git checkout main
+git pull
+docker compose up -d --build --remove-orphans
+docker compose exec php composer install
+docker compose run --rm node npm install
+docker compose exec php php artisan migrate
+docker compose exec php php artisan optimize:clear
+```
+
+`migrate` aplica somente as migrations novas e mantém os dados que já estão no banco. Para recriar o banco com os dados fictícios mais recentes (incluindo as contas de teste), use:
+
+```bash
+docker compose exec php php artisan migrate:fresh --seed
+```
+
+Esse comando apaga todos os dados do banco local.
+
+Se o `.env` foi criado antes das variáveis `APP_PORT`, `VITE_PORT`, `FORWARD_DB_PORT` e `PGADMIN_*`, não é preciso alterá-lo: o Compose usa os mesmos valores padrão. Copie-as do `.env.example` apenas se quiser mudar alguma.
 
 ## `.env`
 
@@ -70,6 +96,8 @@ Para acessar o banco pelo terminal:
 ```bash
 docker compose exec db psql -U estetica estetica
 ```
+
+Também há o pgAdmin em http://localhost:5050 (login `admin@example.com` / `admin`, configurável com `PGADMIN_EMAIL` e `PGADMIN_PASSWORD`). Para conectar ao banco, cadastre um servidor com host `db`, porta `5432`, usuário `estetica` e senha `secret`.
 
 ## Frontend (Vite)
 
@@ -107,6 +135,22 @@ docker compose exec php php artisan route:list
 docker compose exec php composer <comando>
 docker compose run --rm node npm <comando>
 ```
+
+## Problemas comuns
+
+**Página sem estilo.** O arquivo `public/hot` indica ao Laravel que o Vite está rodando em modo dev. Se o container `node` estiver parado, suba-o com `docker compose up -d node` ou apague o arquivo e gere o build com `docker compose run --rm node npm run build`.
+
+**Containers parados depois de reiniciar o Docker Desktop (WSL).** Rode `docker compose up -d` novamente. Se aparecer erro de montagem de volume (`not a directory`), rode `docker compose down` e depois `docker compose up -d`.
+
+**Porta já em uso.** Altere `APP_PORT`, `VITE_PORT`, `FORWARD_DB_PORT` ou `PGADMIN_PORT` no `.env` e rode `docker compose up -d`.
+
+**Testes falham com `database "estetica_testing" does not exist`.** O banco de testes só é criado quando o volume do PostgreSQL é criado. Crie-o manualmente:
+
+```bash
+docker compose exec db createdb -U estetica estetica_testing
+```
+
+**Erro de permissão em `storage` ou `bootstrap/cache`.** Os containers usam o UID/GID `1000`. Se o seu usuário for outro, adicione ao `.env` as variáveis `UID` e `GID` com os valores de `id -u` e `id -g`, rode `docker compose build` e suba os containers de novo.
 
 ## Rotas públicas
 
