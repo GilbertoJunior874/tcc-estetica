@@ -17,28 +17,28 @@
             <div class="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
                 <a href="{{ route('home') }}" class="flex items-center gap-2 font-semibold tracking-tight">
                     <span class="grid size-8 place-items-center rounded-md bg-brand-700 text-sm font-bold text-white">EP</span>
-                    <span>{{ config('app.name') }}</span>
+                    <span class="hidden min-[400px]:inline">{{ config('app.name') }}</span>
                 </a>
 
                 <nav class="flex items-center gap-1 text-sm font-medium">
                     <a href="{{ route('detailings.index') }}" @class([
-                        'rounded-md px-3 py-2 transition-colors',
+                        'rounded-md px-2 py-2 transition-colors sm:px-3',
                         'bg-brand-50 text-brand-700' => request()->routeIs('detailings.*'),
                         'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900' => ! request()->routeIs('detailings.*'),
                     ])>Estéticas</a>
 
                     @auth
                         <a href="{{ route('owner.dashboard') }}" @class([
-                            'rounded-md px-3 py-2 transition-colors',
+                            'rounded-md px-2 py-2 transition-colors sm:px-3',
                             'bg-brand-50 text-brand-700' => request()->routeIs('owner.*'),
                             'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900' => ! request()->routeIs('owner.*'),
                         ])>Painel</a>
                         <form method="post" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="rounded-md px-3 py-2 text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900">Sair</button>
+                            <button type="submit" class="rounded-md px-2 py-2 text-zinc-600 sm:px-3 transition-colors hover:bg-zinc-100 hover:text-zinc-900">Sair</button>
                         </form>
                     @else
-                        <a href="{{ route('login') }}" class="rounded-md px-3 py-2 text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900">Para estéticas</a>
+                        <a href="{{ route('login') }}" class="rounded-md px-2 py-2 text-zinc-600 sm:px-3 transition-colors hover:bg-zinc-100 hover:text-zinc-900">Para estéticas</a>
                     @endauth
                 </nav>
             </div>

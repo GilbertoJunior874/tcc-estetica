@@ -2,8 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Enums\DetailingStatus;
 use App\Models\AutomotiveDetailing;
+use App\Models\BusinessHour;
 use App\Models\Service;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -22,6 +25,8 @@ class AutomotiveDetailingSeeder extends Seeder
         ['Cuidado Total Auto Estética', 'Pacotes de manutenção periódica e higienização completa para quem usa o carro todos os dias.', 'Avenida John Boyd Dunlop', '3400', null, 'Jardim Ipaussurama', '13060-803', -22.9245, -47.1028],
     ];
 
+    private const PENDING_DETAILING = ['Nova Onda Estética Automotiva', 'Estética recém-aberta no Guanabara, com lavagens, higienização e polimento.', 'Rua Barão de Itapura', '2210', null, 'Guanabara', '13073-300', -22.8869, -47.0699];
+
     private const SERVICES = [
         ['Lavagem simples', 'Lavagem externa com shampoo neutro, secagem com microfibra, limpeza de rodas e aspiração rápida do interior.', 5000, 8000, 40],
         ['Lavagem detalhada', 'Lavagem externa minuciosa com pincéis em frisos e emblemas, limpeza de caixas de roda, aspiração completa e limpeza de painel.', 9000, 15000, 90],
@@ -39,35 +44,63 @@ class AutomotiveDetailingSeeder extends Seeder
 
     public function run(): void
     {
-        foreach (self::DETAILINGS as $index => [$name, $description, $street, $number, $complement, $neighborhood, $postalCode, $latitude, $longitude]) {
-            $detailing = AutomotiveDetailing::factory()->create([
-                'name' => $name,
-                'slug' => Str::slug($name),
-                'description' => $description,
-                'phone' => sprintf('(19) 3%03d-%04d', 200 + $index * 37, 1000 + $index * 811),
-                'whatsapp' => sprintf('(19) 9%04d-%04d', 8100 + $index * 53, 2000 + $index * 677),
-                'email' => 'contato@'.Str::slug($name, '').'.com.br',
-                'postal_code' => $postalCode,
-                'street' => $street,
-                'number' => $number,
-                'complement' => $complement,
-                'neighborhood' => $neighborhood,
-                'city' => 'Campinas',
-                'state' => 'SP',
-                'latitude' => $latitude,
-                'longitude' => $longitude,
+        $approvedOwner = User::factory()->create(['name' => 'Responsável Aprovada', 'email' => 'aprovada@exemplo.test']);
+        $pendingOwner = User::factory()->create(['name' => 'Responsável Pendente', 'email' => 'pendente@exemplo.test']);
+
+        foreach (self::DETAILINGS as $index => $data) {
+            $this->createDetailing($index, $data, [
+                'user_id' => $index === 0 ? $approvedOwner->id : null,
+                'status' => DetailingStatus::Approved,
             ]);
+        }
 
-            $services = collect(self::SERVICES)->random(fake()->numberBetween(4, 10));
+        $this->createDetailing(count(self::DETAILINGS), self::PENDING_DETAILING, [
+            'user_id' => $pendingOwner->id,
+            'status' => DetailingStatus::Pending,
+        ]);
+    }
 
-            foreach ($services as [$serviceName, $serviceDescription, $minPrice, $maxPrice, $duration]) {
-                Service::factory()->for($detailing)->create([
-                    'name' => $serviceName,
-                    'description' => $serviceDescription,
-                    'price_cents' => intdiv(fake()->numberBetween($minPrice, $maxPrice), 500) * 500,
-                    'duration_minutes' => $duration,
-                ]);
-            }
+    private function createDetailing(int $index, array $data, array $attributes): void
+    {
+        [$name, $description, $street, $number, $complement, $neighborhood, $postalCode, $latitude, $longitude] = $data;
+
+        $detailing = AutomotiveDetailing::factory()->create([
+            ...$attributes,
+            'name' => $name,
+            'slug' => Str::slug($name),
+            'description' => $description,
+            'phone' => sprintf('(19) 3%03d-%04d', 200 + $index * 37, 1000 + $index * 811),
+            'whatsapp' => sprintf('(19) 9%04d-%04d', 8100 + $index * 53, 2000 + $index * 677),
+            'email' => 'contato@'.Str::slug($name, '').'.com.br',
+            'postal_code' => $postalCode,
+            'street' => $street,
+            'number' => $number,
+            'complement' => $complement,
+            'neighborhood' => $neighborhood,
+            'city' => 'Campinas',
+            'state' => 'SP',
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+        ]);
+
+        $services = collect(self::SERVICES)->random(fake()->numberBetween(4, 10))->values();
+
+        foreach ($services as $position => [$serviceName, $serviceDescription, $minPrice, $maxPrice, $duration]) {
+            Service::factory()->for($detailing)->create([
+                'name' => $serviceName,
+                'description' => $serviceDescription,
+                'price_cents' => intdiv(fake()->numberBetween($minPrice, $maxPrice), 500) * 500,
+                'duration_minutes' => $duration,
+                'active' => $position < 4 || $index % 3 !== 0,
+            ]);
+        }
+
+        foreach (array_keys(BusinessHour::DAYS) as $day) {
+            BusinessHour::factory()->for($detailing)->create(match (true) {
+                $day === 7 => ['day_of_week' => $day, 'opens_at' => null, 'closes_at' => null, 'closed' => true],
+                $day === 6 => ['day_of_week' => $day, 'opens_at' => '08:00', 'closes_at' => $index % 2 ? '13:00' : '14:00'],
+                default => ['day_of_week' => $day, 'opens_at' => $index % 2 ? '08:00' : '08:30', 'closes_at' => '18:00'],
+            });
         }
     }
 }
