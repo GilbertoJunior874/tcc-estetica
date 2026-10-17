@@ -28,11 +28,19 @@
                     ])>Estéticas</a>
 
                     @auth
-                        <a href="{{ route('owner.dashboard') }}" @class([
-                            'rounded-md px-2 py-2 transition-colors sm:px-3',
-                            'bg-brand-50 text-brand-700' => request()->routeIs('owner.*'),
-                            'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900' => ! request()->routeIs('owner.*'),
-                        ])>Painel</a>
+                        @can('access-admin')
+                            <a href="{{ route('admin.dashboard') }}" @class([
+                                'rounded-md px-2 py-2 transition-colors sm:px-3',
+                                'bg-brand-50 text-brand-700' => request()->routeIs('admin.*'),
+                                'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900' => ! request()->routeIs('admin.*'),
+                            ])>Admin</a>
+                        @else
+                            <a href="{{ route('owner.dashboard') }}" @class([
+                                'rounded-md px-2 py-2 transition-colors sm:px-3',
+                                'bg-brand-50 text-brand-700' => request()->routeIs('owner.*'),
+                                'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900' => ! request()->routeIs('owner.*'),
+                            ])>Painel</a>
+                        @endcan
                         <form method="post" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit" class="rounded-md px-2 py-2 text-zinc-600 sm:px-3 transition-colors hover:bg-zinc-100 hover:text-zinc-900">Sair</button>
