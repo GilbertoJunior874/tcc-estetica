@@ -19,6 +19,16 @@ enum DetailingStatus: string
         };
     }
 
+    public function badgeClass(): string
+    {
+        return match ($this) {
+            self::Pending => 'bg-amber-100 text-amber-900',
+            self::Approved => 'bg-emerald-100 text-emerald-900',
+            self::Rejected => 'bg-red-100 text-red-900',
+            self::Inactive => 'bg-zinc-200 text-zinc-800',
+        };
+    }
+
     public function ownerMessage(): string
     {
         return match ($this) {

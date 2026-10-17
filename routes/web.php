@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\DetailingController as AdminDetailingController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\AutomotiveDetailingController;
@@ -44,5 +46,10 @@ Route::middleware('auth')->group(function () {
                 ->names('services');
             Route::patch('/servicos/{service}/status', [ServiceController::class, 'toggle'])->name('services.toggle');
         });
+    });
+
+    Route::prefix('admin')->name('admin.')->middleware('can:access-admin')->group(function () {
+        Route::get('/', AdminDashboardController::class)->name('dashboard');
+        Route::get('/esteticas', [AdminDetailingController::class, 'index'])->name('detailings.index');
     });
 });
