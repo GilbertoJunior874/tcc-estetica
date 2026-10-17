@@ -51,5 +51,10 @@ Route::middleware('auth')->group(function () {
     Route::prefix('admin')->name('admin.')->middleware('can:access-admin')->group(function () {
         Route::get('/', AdminDashboardController::class)->name('dashboard');
         Route::get('/esteticas', [AdminDetailingController::class, 'index'])->name('detailings.index');
+        Route::get('/esteticas/{detailing}', [AdminDetailingController::class, 'show'])->name('detailings.show');
+        Route::patch('/esteticas/{detailing}/aprovar', [AdminDetailingController::class, 'approve'])->name('detailings.approve');
+        Route::patch('/esteticas/{detailing}/recusar', [AdminDetailingController::class, 'reject'])->name('detailings.reject');
+        Route::patch('/esteticas/{detailing}/desativar', [AdminDetailingController::class, 'deactivate'])->name('detailings.deactivate');
+        Route::patch('/esteticas/{detailing}/reativar', [AdminDetailingController::class, 'reactivate'])->name('detailings.reactivate');
     });
 });

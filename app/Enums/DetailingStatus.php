@@ -9,6 +9,16 @@ enum DetailingStatus: string
     case Rejected = 'rejected';
     case Inactive = 'inactive';
 
+    public function canTransitionTo(self $status): bool
+    {
+        return in_array($status, match ($this) {
+            self::Pending => [self::Approved, self::Rejected],
+            self::Approved => [self::Inactive],
+            self::Inactive => [self::Approved],
+            self::Rejected => [],
+        }, true);
+    }
+
     public function label(): string
     {
         return match ($this) {

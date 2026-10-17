@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
+use LogicException;
 
 class AutomotiveDetailing extends Model
 {
@@ -46,6 +47,7 @@ class AutomotiveDetailing extends Model
             'status' => DetailingStatus::class,
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
+            'reviewed_at' => 'datetime',
         ];
     }
 
@@ -76,6 +78,11 @@ class AutomotiveDetailing extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
     public function services(): HasMany
@@ -109,6 +116,20 @@ class AutomotiveDetailing extends Model
     public function isApproved(): bool
     {
         return $this->status === DetailingStatus::Approved;
+    }
+
+    public function transitionTo(DetailingStatus $status, User $reviewer, ?string $reason = null): void
+    {
+        if (! $this->status->canTransitionTo($status)) {
+            throw new LogicException("Transição de {$this->status->value} para {$status->value} não permitida.");
+        }
+
+        $this->forceFill([
+            'status' => $status,
+            'rejection_reason' => $status === DetailingStatus::Rejected ? $reason : null,
+            'reviewed_at' => now(),
+            'reviewed_by' => $reviewer->id,
+        ])->save();
     }
 
     protected function streetAddress(): Attribute

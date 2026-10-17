@@ -35,7 +35,7 @@
                                 enviada em {{ $detailing->created_at->format('d/m/Y H:i') }}
                             </p>
                         </div>
-                        <p class="shrink-0 text-sm text-zinc-600">{{ $detailing->owner?->email }}</p>
+                        <a href="{{ route('admin.detailings.show', $detailing) }}" class="shrink-0 rounded-md bg-brand-700 px-3.5 py-2 text-center text-sm font-medium text-white transition-colors hover:bg-brand-900">Analisar</a>
                     </li>
                 @endforeach
             </ul>
