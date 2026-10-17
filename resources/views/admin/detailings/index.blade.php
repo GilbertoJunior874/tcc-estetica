@@ -38,7 +38,9 @@
                 <tbody class="divide-y divide-zinc-100">
                     @foreach ($detailings as $detailing)
                         <tr>
-                            <td class="px-4 py-3 font-medium">{{ $detailing->name }}</td>
+                            <td class="px-4 py-3 font-medium">
+                                <a href="{{ route('admin.detailings.show', $detailing) }}" class="text-brand-700 hover:text-brand-900">{{ $detailing->name }}</a>
+                            </td>
                             <td class="px-4 py-3">
                                 @if ($detailing->owner)
                                     <span class="block">{{ $detailing->owner->name }}</span>
