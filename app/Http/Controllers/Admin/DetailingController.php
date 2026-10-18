@@ -35,7 +35,7 @@ class DetailingController extends Controller
 
     public function approve(Request $request, AutomotiveDetailing $detailing): RedirectResponse
     {
-        return $this->transition($request, $detailing, DetailingStatus::Approved, 'Estética aprovada e publicada no catálogo.');
+        return $this->transition($request, $detailing, DetailingStatus::Pending, DetailingStatus::Approved, 'Estética aprovada e publicada no catálogo.');
     }
 
     public function reject(Request $request, AutomotiveDetailing $detailing): RedirectResponse
@@ -45,24 +45,24 @@ class DetailingController extends Controller
             attributes: ['rejection_reason' => 'motivo da recusa'],
         );
 
-        return $this->transition($request, $detailing, DetailingStatus::Rejected, 'Solicitação recusada. O responsável verá o motivo no painel.', $data['rejection_reason']);
+        return $this->transition($request, $detailing, DetailingStatus::Pending, DetailingStatus::Rejected, 'Solicitação recusada. O responsável verá o motivo no painel.', $data['rejection_reason']);
     }
 
     public function deactivate(Request $request, AutomotiveDetailing $detailing): RedirectResponse
     {
-        return $this->transition($request, $detailing, DetailingStatus::Inactive, 'Estética desativada e removida do catálogo.');
+        return $this->transition($request, $detailing, DetailingStatus::Approved, DetailingStatus::Inactive, 'Estética desativada e removida do catálogo.');
     }
 
     public function reactivate(Request $request, AutomotiveDetailing $detailing): RedirectResponse
     {
-        return $this->transition($request, $detailing, DetailingStatus::Approved, 'Estética reativada e publicada novamente.');
+        return $this->transition($request, $detailing, DetailingStatus::Inactive, DetailingStatus::Approved, 'Estética reativada e publicada novamente.');
     }
 
-    private function transition(Request $request, AutomotiveDetailing $detailing, DetailingStatus $status, string $message, ?string $reason = null): RedirectResponse
+    private function transition(Request $request, AutomotiveDetailing $detailing, DetailingStatus $from, DetailingStatus $to, string $message, ?string $reason = null): RedirectResponse
     {
-        abort_unless($detailing->status->canTransitionTo($status), 409, 'Esta alteração de situação não é permitida.');
+        abort_unless($detailing->status === $from && $from->canTransitionTo($to), 409, 'Esta alteração de situação não é permitida.');
 
-        $detailing->transitionTo($status, $request->user(), $reason);
+        $detailing->transitionTo($to, $request->user(), $reason);
 
         return redirect()->route('admin.detailings.show', $detailing)->with('status', $message);
     }

@@ -44,7 +44,7 @@ enum DetailingStatus: string
         return match ($this) {
             self::Pending => 'Recebemos sua solicitação. A estética passa a aparecer no catálogo depois que o cadastro for analisado e aprovado.',
             self::Approved => 'Sua estética está publicada e aparece no catálogo público.',
-            self::Rejected => 'O cadastro da estética não foi aprovado.',
+            self::Rejected => 'O cadastro da estética não foi aprovado. Corrija os dados indicados no motivo abaixo e salve para reenviar a solicitação para análise.',
             self::Inactive => 'Sua estética está inativa e não aparece no catálogo. Os dados não podem ser alterados enquanto ela estiver nessa situação.',
         };
     }
