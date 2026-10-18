@@ -27,6 +27,8 @@ class AutomotiveDetailingSeeder extends Seeder
 
     private const PENDING_DETAILING = ['Nova Onda Estética Automotiva', 'Estética recém-aberta no Guanabara, com lavagens, higienização e polimento.', 'Rua Barão de Itapura', '2210', null, 'Guanabara', '13073-300', -22.8869, -47.0699];
 
+    private const REJECTED_DETAILING = ['Auto Brilho Express', 'Lavagem rápida e enceramento no Centro.', 'Rua Conceição', '88', null, 'Centro', '13010-050', null, null];
+
     private const SERVICES = [
         ['Lavagem simples', 'Lavagem externa com shampoo neutro, secagem com microfibra, limpeza de rodas e aspiração rápida do interior.', 5000, 8000, 40],
         ['Lavagem detalhada', 'Lavagem externa minuciosa com pincéis em frisos e emblemas, limpeza de caixas de roda, aspiração completa e limpeza de painel.', 9000, 15000, 90],
@@ -44,19 +46,33 @@ class AutomotiveDetailingSeeder extends Seeder
 
     public function run(): void
     {
+        $admin = User::factory()->admin()->create(['name' => 'Administração', 'email' => 'admin@exemplo.test']);
         $approvedOwner = User::factory()->create(['name' => 'Responsável Aprovada', 'email' => 'aprovada@exemplo.test']);
         $pendingOwner = User::factory()->create(['name' => 'Responsável Pendente', 'email' => 'pendente@exemplo.test']);
+        $rejectedOwner = User::factory()->create(['name' => 'Responsável Recusada', 'email' => 'recusada@exemplo.test']);
+
+        $lastIndex = count(self::DETAILINGS) - 1;
 
         foreach (self::DETAILINGS as $index => $data) {
             $this->createDetailing($index, $data, [
                 'user_id' => $index === 0 ? $approvedOwner->id : null,
-                'status' => DetailingStatus::Approved,
+                'status' => $index === $lastIndex ? DetailingStatus::Inactive : DetailingStatus::Approved,
+                'reviewed_at' => now(),
+                'reviewed_by' => $admin->id,
             ]);
         }
 
-        $this->createDetailing(count(self::DETAILINGS), self::PENDING_DETAILING, [
+        $this->createDetailing($lastIndex + 1, self::PENDING_DETAILING, [
             'user_id' => $pendingOwner->id,
             'status' => DetailingStatus::Pending,
+        ]);
+
+        $this->createDetailing($lastIndex + 2, self::REJECTED_DETAILING, [
+            'user_id' => $rejectedOwner->id,
+            'status' => DetailingStatus::Rejected,
+            'rejection_reason' => 'O número informado não corresponde ao endereço. Confira o endereço completo e o CEP.',
+            'reviewed_at' => now(),
+            'reviewed_by' => $admin->id,
         ]);
     }
 
