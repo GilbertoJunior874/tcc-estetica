@@ -107,6 +107,40 @@ class AutomotiveDetailing extends Model
     }
 
     #[Scope]
+    protected function search(Builder $query, ?string $term): void
+    {
+        if (blank($term)) {
+            return;
+        }
+
+        $pattern = static::likePattern($term);
+
+        $query->where(fn (Builder $query) => $query
+            ->where('name', 'ilike', $pattern)
+            ->orWhere('city', 'ilike', $pattern)
+            ->orWhere('neighborhood', 'ilike', $pattern)
+            ->orWhereHas('activeServices', fn (Builder $query) => $query->where('name', 'ilike', $pattern)));
+    }
+
+    #[Scope]
+    protected function offering(Builder $query, ?string $service, ?int $minPriceCents, ?int $maxPriceCents): void
+    {
+        if (blank($service) && $minPriceCents === null && $maxPriceCents === null) {
+            return;
+        }
+
+        $query->whereHas('activeServices', fn (Builder $query) => $query
+            ->when(filled($service), fn (Builder $query) => $query->where('name', 'ilike', static::likePattern($service)))
+            ->when($minPriceCents !== null, fn (Builder $query) => $query->where('price_cents', '>=', $minPriceCents))
+            ->when($maxPriceCents !== null, fn (Builder $query) => $query->where('price_cents', '<=', $maxPriceCents)));
+    }
+
+    private static function likePattern(string $term): string
+    {
+        return '%'.addcslashes(trim($term), '\\%_').'%';
+    }
+
+    #[Scope]
     protected function withCatalogSummary(Builder $query): void
     {
         $query->withCount('activeServices')
