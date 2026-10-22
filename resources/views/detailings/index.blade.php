@@ -49,6 +49,45 @@
                 </div>
             </div>
 
+            <div class="mt-4 grid gap-4 border-t border-zinc-100 pt-4 sm:grid-cols-2 lg:grid-cols-6">
+                <div class="sm:col-span-2 lg:col-span-2">
+                    <span class="block text-sm font-medium text-zinc-800">Proximidade</span>
+                    @if ($hasLocation)
+                        <input type="hidden" name="lat" value="{{ $filters['lat'] }}">
+                        <input type="hidden" name="lng" value="{{ $filters['lng'] }}">
+                        <p class="mt-2 text-sm text-zinc-700">
+                            Usando sua localização.
+                            <a href="{{ route('detailings.index', \Illuminate\Support\Arr::except($filters, ['lat', 'lng', 'raio', 'ordem'])) }}" class="font-medium text-brand-700 hover:text-brand-900">Remover</a>
+                        </p>
+                    @else
+                        <button type="button" hidden data-geolocate data-latitude="[name=lat]" data-longitude="[name=lng]" data-submit class="mt-1 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50">Usar minha localização</button>
+                        <noscript><p class="mt-2 text-sm text-zinc-600">Ative o JavaScript para buscar por proximidade.</p></noscript>
+                    @endif
+                    <p data-geolocate-feedback aria-live="polite" class="mt-1 text-sm text-zinc-600"></p>
+                </div>
+                @if ($hasLocation)
+                    <div class="lg:col-span-2">
+                        <label for="raio" class="block text-sm font-medium text-zinc-800">Distância máxima</label>
+                        <select id="raio" name="raio" class="{{ $inputClass }}">
+                            <option value="">Qualquer distância</option>
+                            @foreach (\App\Http\Requests\CatalogFilterRequest::RADII as $radius)
+                                <option value="{{ $radius }}" @selected((int) ($filters['raio'] ?? 0) === $radius)>Até {{ $radius }} km</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
+                <div class="lg:col-span-2">
+                    <label for="ordem" class="block text-sm font-medium text-zinc-800">Ordenar por</label>
+                    <select id="ordem" name="ordem" class="{{ $inputClass }}">
+                        @if ($hasLocation)
+                            <option value="distancia" @selected($sort === 'distancia')>Mais próximas</option>
+                        @endif
+                        <option value="nome" @selected($sort === 'nome')>Nome</option>
+                        <option value="preco" @selected($sort === 'preco')>Menor preço</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="mt-4 flex flex-wrap items-center gap-2">
                 <button type="submit" class="rounded-md bg-brand-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-900">Buscar</button>
                 @if ($hasFilters)
