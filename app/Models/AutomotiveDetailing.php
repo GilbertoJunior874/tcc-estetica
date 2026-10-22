@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\DetailingStatus;
+use Carbon\CarbonInterface;
 use Database\Factories\AutomotiveDetailingFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 use LogicException;
 
@@ -135,6 +137,20 @@ class AutomotiveDetailing extends Model
             ->when($maxPriceCents !== null, fn (Builder $query) => $query->where('price_cents', '<=', $maxPriceCents)));
     }
 
+    #[Scope]
+    protected function nearTo(Builder $query, float $latitude, float $longitude, ?int $radiusKm = null): void
+    {
+        $distance = '6371 * acos(least(1.0, greatest(-1.0, cos(radians(?::double precision)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?::double precision)) + sin(radians(?::double precision)) * sin(radians(latitude)))))';
+        $bindings = [$latitude, $longitude, $latitude];
+
+        $query->select($query->getModel()->qualifyColumn('*'))
+            ->selectRaw("{$distance} as distance_km", $bindings)
+            ->when($radiusKm !== null, fn (Builder $query) => $query
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->whereRaw("{$distance} <= ?", [...$bindings, $radiusKm]));
+    }
+
     private static function likePattern(string $term): string
     {
         return '%'.addcslashes(trim($term), '\\%_').'%';
@@ -164,6 +180,40 @@ class AutomotiveDetailing extends Model
             'reviewed_at' => now(),
             'reviewed_by' => $reviewer->id,
         ])->save();
+    }
+
+    public function isOpenAt(CarbonInterface $moment): ?bool
+    {
+        if ($this->businessHours->isEmpty()) {
+            return null;
+        }
+
+        $hours = $this->businessHours->firstWhere('day_of_week', $moment->dayOfWeekIso);
+
+        if (! $hours || $hours->closed || ! $hours->opens_at || ! $hours->closes_at) {
+            return false;
+        }
+
+        $time = $moment->format('H:i');
+
+        return $time >= $hours->opens_at && $time < $hours->closes_at;
+    }
+
+    protected function distanceLabel(): Attribute
+    {
+        return Attribute::get(function () {
+            $distance = $this->attributes['distance_km'] ?? null;
+
+            if ($distance === null) {
+                return null;
+            }
+
+            $distance = (float) $distance;
+
+            return $distance < 1
+                ? max(10, (int) round($distance * 1000 / 10) * 10).' m'
+                : Number::format($distance, precision: 1, locale: 'pt_BR').' km';
+        });
     }
 
     protected function streetAddress(): Attribute

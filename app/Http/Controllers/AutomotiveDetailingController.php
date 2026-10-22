@@ -11,9 +11,17 @@ class AutomotiveDetailingController extends Controller
     public function index(CatalogFilterRequest $request): View
     {
         $filters = $request->validated();
+        $hasLocation = isset($filters['lat'], $filters['lng']);
+        $sort = $filters['ordem'] ?? ($hasLocation ? 'distancia' : 'nome');
+
+        if ($sort === 'distancia' && ! $hasLocation) {
+            $sort = 'nome';
+        }
 
         return view('detailings.index', [
             'filters' => $filters,
+            'hasLocation' => $hasLocation,
+            'sort' => $sort,
             'cities' => AutomotiveDetailing::approved()->distinct()->orderBy('city')->pluck('city'),
             'detailings' => AutomotiveDetailing::approved()
                 ->search($filters['q'] ?? null)
@@ -23,8 +31,11 @@ class AutomotiveDetailingController extends Controller
                     isset($filters['preco_min']) ? $filters['preco_min'] * 100 : null,
                     isset($filters['preco_max']) ? $filters['preco_max'] * 100 : null,
                 )
+                ->when($hasLocation, fn ($query) => $query->nearTo((float) $filters['lat'], (float) $filters['lng'], $filters['raio'] ?? null))
                 ->withCatalogSummary()
-                ->with(['activeServices' => fn ($query) => $query->orderBy('price_cents')])
+                ->with(['activeServices' => fn ($query) => $query->orderBy('price_cents'), 'businessHours'])
+                ->when($sort === 'distancia', fn ($query) => $query->orderBy('distance_km'))
+                ->when($sort === 'preco', fn ($query) => $query->orderBy('active_services_min_price_cents'))
                 ->orderBy('name')
                 ->paginate(12)
                 ->withQueryString(),
