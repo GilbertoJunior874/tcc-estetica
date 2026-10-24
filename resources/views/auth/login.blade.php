@@ -1,7 +1,7 @@
 <x-layout title="Entrar">
     <div class="mx-auto max-w-md px-4 py-10 sm:py-14">
         <h1 class="text-2xl font-bold tracking-tight">Entrar</h1>
-        <p class="mt-2 text-sm text-zinc-600">Acesso para responsáveis por estéticas cadastradas.</p>
+        <p class="mt-2 text-sm text-zinc-600">Acesso para responsáveis por estéticas e para a administração da plataforma.</p>
 
         <form method="post" action="{{ route('login') }}" class="mt-8 space-y-5 rounded-lg border border-zinc-200 bg-white p-5 sm:p-6">
             @csrf
