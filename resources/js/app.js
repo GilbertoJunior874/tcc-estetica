@@ -42,3 +42,38 @@ document.querySelectorAll('[data-geolocate]').forEach((button) => {
         );
     });
 });
+
+const selection = document.querySelector('[data-service-selection]');
+
+if (selection) {
+    const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+    const empty = document.querySelector('[data-selection-empty]');
+    const summary = document.querySelector('[data-selection-summary]');
+    const list = document.querySelector('[data-selection-list]');
+    const total = document.querySelector('[data-selection-total]');
+
+    const update = () => {
+        const checked = [...selection.querySelectorAll('input[name="servicos[]"]:checked')];
+        const cents = checked.reduce((sum, input) => sum + Number(input.dataset.price), 0);
+
+        list.replaceChildren(
+            ...checked.map((input) => {
+                const item = document.createElement('li');
+                item.className = 'flex justify-between gap-4';
+                item.append(
+                    Object.assign(document.createElement('span'), { textContent: input.dataset.name }),
+                    Object.assign(document.createElement('span'), { textContent: currency.format(Number(input.dataset.price) / 100), className: 'shrink-0 text-zinc-600' }),
+                );
+
+                return item;
+            }),
+        );
+
+        total.textContent = currency.format(cents / 100);
+        empty.hidden = checked.length > 0;
+        summary.hidden = checked.length === 0;
+    };
+
+    selection.addEventListener('change', update);
+    update();
+}

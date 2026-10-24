@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CatalogFilterRequest;
 use App\Models\AutomotiveDetailing;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class AutomotiveDetailingController extends Controller
@@ -40,6 +42,23 @@ class AutomotiveDetailingController extends Controller
                 ->paginate(12)
                 ->withQueryString(),
         ]);
+    }
+
+    public function whatsapp(Request $request, AutomotiveDetailing $detailing): RedirectResponse
+    {
+        abort_unless($detailing->isApproved() && $detailing->whatsapp_number, 404);
+
+        $data = $request->validate([
+            'servicos' => ['nullable', 'array', 'max:50'],
+            'servicos.*' => ['integer'],
+        ]);
+
+        $services = $detailing->activeServices()
+            ->whereIn('id', $data['servicos'] ?? [])
+            ->orderBy('price_cents')
+            ->get();
+
+        return redirect()->away($detailing->whatsappUrlFor($services));
     }
 
     public function show(AutomotiveDetailing $detailing): View

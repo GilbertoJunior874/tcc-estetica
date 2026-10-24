@@ -34,7 +34,7 @@ class DetailingPageTest extends TestCase
             ->assertSee('Correção de pintura em etapas.')
             ->assertSee('850,00')
             ->assertSee('8h')
-            ->assertSee('https://wa.me/5519998765432')
+            ->assertSee(route('detailings.whatsapp', $detailing))
             ->assertDontSee('Serviço desativado');
     }
 

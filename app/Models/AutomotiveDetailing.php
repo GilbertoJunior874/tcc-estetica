@@ -8,6 +8,7 @@ use Database\Factories\AutomotiveDetailingFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -230,10 +231,59 @@ class AutomotiveDetailing extends Model
         return Attribute::get(fn () => "{$this->neighborhood}, {$this->city} – {$this->state}");
     }
 
+    protected function whatsappNumber(): Attribute
+    {
+        return Attribute::get(function () {
+            $digits = preg_replace('/\D/', '', (string) $this->whatsapp);
+
+            return match (true) {
+                in_array(strlen($digits), [10, 11], true) => "55{$digits}",
+                str_starts_with($digits, '55') && in_array(strlen($digits), [12, 13], true) => $digits,
+                default => null,
+            };
+        });
+    }
+
     protected function whatsappUrl(): Attribute
     {
-        return Attribute::get(fn () => $this->whatsapp
-            ? 'https://wa.me/55'.preg_replace('/\D/', '', $this->whatsapp)
-            : null);
+        return Attribute::get(fn () => $this->whatsappUrlFor(new Collection));
+    }
+
+    public function whatsappUrlFor(Collection $services): ?string
+    {
+        if (! $this->whatsapp_number) {
+            return null;
+        }
+
+        return "https://wa.me/{$this->whatsapp_number}?".http_build_query(
+            ['text' => $this->whatsappMessage($services)],
+            encoding_type: PHP_QUERY_RFC3986,
+        );
+    }
+
+    public function whatsappMessage(Collection $services): string
+    {
+        $greeting = 'Olá! Encontrei vocês pelo '.config('app.name');
+
+        if ($services->isEmpty()) {
+            return "{$greeting} e gostaria de mais informações sobre os serviços.";
+        }
+
+        $lines = $services->map(fn (Service $service) => "- {$service->name}: ".static::money($service->price_cents));
+
+        return implode("\n", [
+            "{$greeting} e gostaria de saber mais sobre os seguintes serviços:",
+            '',
+            ...$lines,
+            '',
+            'Total estimado: '.static::money($services->sum('price_cents')),
+            '',
+            'Podem confirmar valores e disponibilidade?',
+        ]);
+    }
+
+    private static function money(int $cents): string
+    {
+        return str_replace("\u{00A0}", ' ', Number::currency($cents / 100, in: 'BRL', locale: 'pt_BR'));
     }
 }
