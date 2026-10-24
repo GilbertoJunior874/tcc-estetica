@@ -10,7 +10,7 @@ class AutomotiveDetailingPolicy
 {
     public function create(User $user): bool
     {
-        return $user->automotiveDetailing()->doesntExist();
+        return ! $user->isAdmin() && $user->automotiveDetailing()->doesntExist();
     }
 
     public function update(User $user, AutomotiveDetailing $detailing): bool
