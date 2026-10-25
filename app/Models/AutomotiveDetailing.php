@@ -141,15 +141,12 @@ class AutomotiveDetailing extends Model
     #[Scope]
     protected function nearTo(Builder $query, float $latitude, float $longitude, ?int $radiusKm = null): void
     {
-        $distance = '6371 * acos(least(1.0, greatest(-1.0, cos(radians(?::double precision)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?::double precision)) + sin(radians(?::double precision)) * sin(radians(latitude)))))';
+        $distance = 'case when latitude is null or longitude is null then null else 6371 * acos(least(1.0, greatest(-1.0, cos(radians(?::double precision)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?::double precision)) + sin(radians(?::double precision)) * sin(radians(latitude))))) end';
         $bindings = [$latitude, $longitude, $latitude];
 
         $query->select($query->getModel()->qualifyColumn('*'))
             ->selectRaw("{$distance} as distance_km", $bindings)
-            ->when($radiusKm !== null, fn (Builder $query) => $query
-                ->whereNotNull('latitude')
-                ->whereNotNull('longitude')
-                ->whereRaw("{$distance} <= ?", [...$bindings, $radiusKm]));
+            ->when($radiusKm !== null, fn (Builder $query) => $query->whereRaw("{$distance} <= ?", [...$bindings, $radiusKm]));
     }
 
     private static function likePattern(string $term): string
