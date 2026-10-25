@@ -1,0 +1,84 @@
+@startuml entity-relationship
+!pragma layout smetana
+hide circle
+hide methods
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam backgroundColor white
+skinparam linetype ortho
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #1F5F84
+  HeaderBackgroundColor #F4F8FB
+}
+
+title Diagrama Entidade-Relacionamento — Estética Perto
+
+entity "users" as users {
+  * id : bigint <<PK>>
+  --
+  * name : varchar
+  * email : varchar <<UK>>
+  email_verified_at : timestamp
+  * password : varchar (hash)
+  * is_admin : boolean
+  remember_token : varchar
+  created_at / updated_at : timestamp
+}
+
+entity "automotive_detailings" as detailings {
+  * id : bigint <<PK>>
+  --
+  user_id : bigint <<FK, UK>>
+  * name : varchar
+  * slug : varchar <<UK>>
+  description : text
+  phone : varchar(20)
+  whatsapp : varchar(20)
+  email : varchar
+  * postal_code : varchar(9)
+  * street : varchar
+  * number : varchar(20)
+  complement : varchar
+  * neighborhood : varchar
+  * city : varchar
+  * state : char(2)
+  latitude : decimal(10,7)
+  longitude : decimal(10,7)
+  * status : varchar(20)
+  rejection_reason : text
+  reviewed_at : timestamp
+  reviewed_by : bigint <<FK>>
+  created_at / updated_at : timestamp
+}
+
+entity "services" as services {
+  * id : bigint <<PK>>
+  --
+  * automotive_detailing_id : bigint <<FK>>
+  * name : varchar
+  description : text
+  * price_cents : integer
+  duration_minutes : smallint
+  * active : boolean
+  created_at / updated_at : timestamp
+}
+
+entity "business_hours" as hours {
+  * id : bigint <<PK>>
+  --
+  * automotive_detailing_id : bigint <<FK>>
+  * day_of_week : smallint (1–7)
+  opens_at : time
+  closes_at : time
+  * closed : boolean
+  created_at / updated_at : timestamp
+  ..
+  UK (automotive_detailing_id, day_of_week)
+}
+
+users |o--o| detailings : "gerencia\n(user_id)"
+users |o--o{ detailings : "analisa\n(reviewed_by)"
+detailings ||--o{ services : "oferece"
+detailings ||--o{ hours : "funciona em\n(até 7)"
+@enduml
