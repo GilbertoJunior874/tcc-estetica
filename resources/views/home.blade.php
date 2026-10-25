@@ -9,17 +9,18 @@
                     Veja os serviços, o que está incluído e quanto custa antes de entrar em contato. Sem cadastro.
                 </p>
 
-                <form action="{{ route('detailings.index') }}" method="get" class="mt-8 flex flex-col gap-2 sm:flex-row">
-                    <label for="location" class="sr-only">Bairro ou cidade</label>
+                <form action="{{ route('detailings.index') }}" method="get" role="search" class="mt-8 flex flex-col gap-2 sm:flex-row">
+                    <label for="q" class="sr-only">Buscar por nome, bairro, cidade ou serviço</label>
                     <input
-                        id="location"
-                        type="text"
-                        disabled
-                        placeholder="Busca por bairro ou cidade em breve"
-                        class="w-full cursor-not-allowed rounded-md border border-zinc-300 bg-zinc-50 px-4 py-3 text-sm placeholder:text-zinc-400"
+                        id="q"
+                        name="q"
+                        type="search"
+                        maxlength="100"
+                        placeholder="Bairro, cidade ou serviço (ex.: polimento)"
+                        class="w-full rounded-md border border-zinc-300 bg-white px-4 py-3 text-sm placeholder:text-zinc-400 focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
                     >
                     <button type="submit" class="shrink-0 rounded-md bg-brand-700 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-brand-900">
-                        Ver todas as estéticas
+                        Buscar estéticas
                     </button>
                 </form>
                 <p class="mt-2 text-xs text-zinc-500">{{ trans_choice('{0} Nenhuma estética disponível ainda.|{1} 1 estética disponível.|[2,*] :count estéticas disponíveis.', $totalApproved) }}</p>

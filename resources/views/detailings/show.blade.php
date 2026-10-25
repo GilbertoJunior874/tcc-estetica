@@ -1,8 +1,8 @@
 <x-layout :title="$detailing->name" :description="Str::limit($detailing->description, 155)">
     <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-        <nav class="text-sm text-zinc-500">
+        <nav aria-label="Trilha" class="text-sm text-zinc-500">
             <a href="{{ route('detailings.index') }}" class="hover:text-zinc-900">Estéticas</a>
-            <span class="mx-1">/</span>
+            <span class="mx-1" aria-hidden="true">/</span>
             <span class="text-zinc-700">{{ $detailing->name }}</span>
         </nav>
 
