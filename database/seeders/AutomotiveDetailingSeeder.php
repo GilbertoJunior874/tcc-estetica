@@ -27,7 +27,7 @@ class AutomotiveDetailingSeeder extends Seeder
 
     private const PENDING_DETAILING = ['Nova Onda Estética Automotiva', 'Estética recém-aberta no Guanabara, com lavagens, higienização e polimento.', 'Rua Barão de Itapura', '2210', null, 'Guanabara', '13073-300', -22.8869, -47.0699];
 
-    private const REJECTED_DETAILING = ['Auto Brilho Express', 'Lavagem rápida e enceramento no Centro.', 'Rua Conceição', '88', null, 'Centro', '13010-050', null, null];
+    private const REJECTED_DETAILING = ['Auto Brilho Express', 'Lavagem rápida e enceramento no Centro.', 'Rua Conceição', '88', null, 'Centro', '13010-050', -22.9035, -47.0587];
 
     private const SERVICES = [
         ['Lavagem simples', 'Lavagem externa com shampoo neutro, secagem com microfibra, limpeza de rodas e aspiração rápida do interior.', 5000, 8000, 40],

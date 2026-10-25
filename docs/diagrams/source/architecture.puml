@@ -1,0 +1,50 @@
+@startuml architecture
+!pragma layout smetana
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam backgroundColor white
+skinparam ArrowColor #3F3F46
+skinparam node {
+  BackgroundColor #F4F8FB
+  BorderColor #1F5F84
+}
+skinparam database {
+  BackgroundColor #F4F8FB
+  BorderColor #1F5F84
+}
+skinparam component {
+  BackgroundColor #FFFFFF
+  BorderColor #52525B
+}
+
+title Diagrama de Arquitetura — Estética Perto (ambiente Docker Compose)
+
+actor "Visitante, responsável\nou administrador" as user
+node "Navegador" as browser
+cloud "WhatsApp\n(wa.me)" as whatsapp
+
+frame "Docker Compose — rede estetica" {
+  node "nginx\n(porta 8000)" as nginx
+  node "php (PHP-FPM 8.4)" as php {
+    component "Laravel 13\nRotas · Middleware · Policies\nControllers · Form Requests\nEloquent ORM" as laravel
+    component "Blade\n(renderização no servidor)" as blade
+  }
+  database "PostgreSQL 17\n(db:5432)\nestetica · estetica_testing" as db
+  node "node (Node 22 + Vite)\n(porta 5173)" as vite
+  node "pgAdmin 4\n(127.0.0.1:5050)" as pgadmin
+}
+
+folder "public/build\n(assets compilados)" as build
+
+user --> browser
+browser --> nginx : HTTP
+nginx --> php : FastCGI :9000
+laravel --> blade
+laravel --> db : PDO (pgsql)
+nginx ..> build : arquivos estáticos
+vite ..> build : npm run build
+browser ..> vite : CSS/JS em desenvolvimento
+browser ..> whatsapp : link gerado pela aplicação
+pgadmin --> db : administração local
+user ..> pgadmin : desenvolvedor
+@enduml
