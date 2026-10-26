@@ -1,8 +1,8 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "estetica-perto/app",
+    "name": "detailmap/app",
     "type": "project",
-    "description": "Diretório público de estéticas automotivas.",
+    "description": "DetailMap: plataforma para encontrar estéticas automotivas, comparar serviços e entrar em contato diretamente pelo WhatsApp.",
     "keywords": [
         "laravel",
         "estetica-automotiva"

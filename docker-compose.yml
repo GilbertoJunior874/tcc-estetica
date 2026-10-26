@@ -1,4 +1,4 @@
-name: estetica-automotiva
+name: detailmap
 
 services:
   php:
@@ -8,7 +8,7 @@ services:
       args:
         UID: ${UID:-1000}
         GID: ${GID:-1000}
-    container_name: estetica_php
+    container_name: detailmap_php
     restart: unless-stopped
     working_dir: /var/www/html
     volumes:
@@ -18,11 +18,11 @@ services:
       db:
         condition: service_healthy
     networks:
-      - estetica
+      - detailmap
 
   nginx:
     image: nginx:alpine
-    container_name: estetica_nginx
+    container_name: detailmap_nginx
     restart: unless-stopped
     ports:
       - "${APP_PORT:-8000}:80"
@@ -32,11 +32,11 @@ services:
     depends_on:
       - php
     networks:
-      - estetica
+      - detailmap
 
   node:
     image: node:22-alpine
-    container_name: estetica_node
+    container_name: detailmap_node
     restart: unless-stopped
     user: "${UID:-1000}:${GID:-1000}"
     working_dir: /var/www/html
@@ -46,11 +46,11 @@ services:
     volumes:
       - .:/var/www/html
     networks:
-      - estetica
+      - detailmap
 
   db:
     image: postgres:17-alpine
-    container_name: estetica_postgres
+    container_name: detailmap_postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_DATABASE:-estetica}
@@ -59,7 +59,7 @@ services:
     ports:
       - "127.0.0.1:${FORWARD_DB_PORT:-5432}:5432"
     volumes:
-      - estetica_pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
       - ./docker/postgres/create-testing-database.sql:/docker-entrypoint-initdb.d/create-testing-database.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
@@ -67,11 +67,11 @@ services:
       timeout: 5s
       retries: 10
     networks:
-      - estetica
+      - detailmap
 
   pgadmin:
     image: dpage/pgadmin4:9.18
-    container_name: estetica_pgadmin
+    container_name: detailmap_pgadmin
     restart: unless-stopped
     ports:
       - "127.0.0.1:${PGADMIN_PORT:-5050}:80"
@@ -79,16 +79,16 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
     volumes:
-      - estetica_pgadmin_data:/var/lib/pgadmin
+      - pgadmin_data:/var/lib/pgadmin
       - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
     depends_on:
       - db
     networks:
-      - estetica
+      - detailmap
 
 volumes:
-  estetica_pgdata:
-  estetica_pgadmin_data:
+  pgdata:
+  pgadmin_data:
 
 networks:
-  estetica:
+  detailmap:

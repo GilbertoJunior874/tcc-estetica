@@ -18,7 +18,7 @@ class HomePageTest extends TestCase
 
         $this->get(route('home'))
             ->assertOk()
-            ->assertSee('Encontre uma estética automotiva perto de você')
+            ->assertSee('Encontre a estética automotiva ideal perto de você')
             ->assertSee($approved->name)
             ->assertSee('60,00')
             ->assertDontSee($pending->name);

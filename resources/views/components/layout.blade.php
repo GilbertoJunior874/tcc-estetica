@@ -18,7 +18,7 @@
         <header class="border-b border-zinc-200 bg-white">
             <div class="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
                 <a href="{{ route('home') }}" class="flex items-center gap-2 font-semibold tracking-tight" aria-label="{{ config('app.name') }}: página inicial">
-                    <span class="grid size-8 place-items-center rounded-md bg-brand-700 text-sm font-bold text-white" aria-hidden="true">EP</span>
+                    <span class="grid size-8 place-items-center rounded-md bg-brand-700 text-sm font-bold text-white" aria-hidden="true">DM</span>
                     <span class="hidden min-[400px]:inline">{{ config('app.name') }}</span>
                 </a>
 

@@ -10,13 +10,13 @@ skinparam usecase {
   BorderColor #1F5F84
 }
 
-title Diagrama de Casos de Uso — Estética Perto
+title Diagrama de Casos de Uso — DetailMap
 
 actor "Visitante" as V
 actor "Responsável pela\nEstética" as R
 actor "Administrador" as A
 
-rectangle "Estética Perto" {
+rectangle "DetailMap" {
   package "Catálogo público" {
     usecase "Consultar estéticas aprovadas" as UC01
     usecase "Buscar e filtrar\n(nome, bairro, cidade,\nserviço, preço)" as UC02

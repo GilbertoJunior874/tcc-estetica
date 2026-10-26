@@ -17,7 +17,7 @@ skinparam component {
   BorderColor #52525B
 }
 
-title Diagrama de Arquitetura — Estética Perto (ambiente Docker Compose)
+title Diagrama de Arquitetura — DetailMap (ambiente Docker Compose)
 
 actor "Visitante, responsável\nou administrador" as user
 node "Navegador" as browser
