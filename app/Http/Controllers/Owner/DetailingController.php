@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Owner;
 
+use App\Enums\DetailingStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DetailingRequest;
 use Illuminate\Http\RedirectResponse;
@@ -43,7 +44,15 @@ class DetailingController extends Controller
 
         Gate::authorize('update', $detailing);
 
-        $detailing->update($request->validated());
+        $detailing->fill($request->validated());
+
+        if ($detailing->status === DetailingStatus::Rejected) {
+            $detailing->forceFill(['status' => DetailingStatus::Pending, 'rejection_reason' => null])->save();
+
+            return redirect()->route('owner.dashboard')->with('status', 'Dados corrigidos e solicitação reenviada para análise.');
+        }
+
+        $detailing->save();
 
         return redirect()->route('owner.detailing.edit')->with('status', 'Dados da estética atualizados.');
     }
