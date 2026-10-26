@@ -14,6 +14,10 @@ class DetailingController extends Controller
 {
     public function create(Request $request): View|RedirectResponse
     {
+        if ($request->user()->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+
         if ($request->user()->automotiveDetailing) {
             return redirect()->route('owner.dashboard');
         }

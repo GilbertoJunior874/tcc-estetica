@@ -13,15 +13,17 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="flex min-h-screen flex-col bg-zinc-50 font-sans text-zinc-900 antialiased">
+        <a href="#conteudo" class="sr-only rounded-md bg-white px-4 py-2 text-sm font-medium text-brand-700 shadow focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50">Pular para o conteúdo</a>
+
         <header class="border-b border-zinc-200 bg-white">
             <div class="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-                <a href="{{ route('home') }}" class="flex items-center gap-2 font-semibold tracking-tight">
-                    <span class="grid size-8 place-items-center rounded-md bg-brand-700 text-sm font-bold text-white">EP</span>
+                <a href="{{ route('home') }}" class="flex items-center gap-2 font-semibold tracking-tight" aria-label="{{ config('app.name') }}: página inicial">
+                    <span class="grid size-8 place-items-center rounded-md bg-brand-700 text-sm font-bold text-white" aria-hidden="true">EP</span>
                     <span class="hidden min-[400px]:inline">{{ config('app.name') }}</span>
                 </a>
 
-                <nav class="flex items-center gap-1 text-sm font-medium">
-                    <a href="{{ route('detailings.index') }}" @class([
+                <nav aria-label="Principal" class="flex items-center gap-1 text-sm font-medium">
+                    <a href="{{ route('detailings.index') }}" @if (request()->routeIs('detailings.*')) aria-current="page" @endif @class([
                         'rounded-md px-2 py-2 transition-colors sm:px-3',
                         'bg-brand-50 text-brand-700' => request()->routeIs('detailings.*'),
                         'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900' => ! request()->routeIs('detailings.*'),
@@ -29,13 +31,13 @@
 
                     @auth
                         @can('access-admin')
-                            <a href="{{ route('admin.dashboard') }}" @class([
+                            <a href="{{ route('admin.dashboard') }}" @if (request()->routeIs('admin.*')) aria-current="page" @endif @class([
                                 'rounded-md px-2 py-2 transition-colors sm:px-3',
                                 'bg-brand-50 text-brand-700' => request()->routeIs('admin.*'),
                                 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900' => ! request()->routeIs('admin.*'),
                             ])>Admin</a>
                         @else
-                            <a href="{{ route('owner.dashboard') }}" @class([
+                            <a href="{{ route('owner.dashboard') }}" @if (request()->routeIs('owner.*')) aria-current="page" @endif @class([
                                 'rounded-md px-2 py-2 transition-colors sm:px-3',
                                 'bg-brand-50 text-brand-700' => request()->routeIs('owner.*'),
                                 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900' => ! request()->routeIs('owner.*'),
@@ -52,7 +54,7 @@
             </div>
         </header>
 
-        <main class="flex-1">
+        <main id="conteudo" tabindex="-1" class="flex-1 focus:outline-none">
             {{ $slot }}
         </main>
 

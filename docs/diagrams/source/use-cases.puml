@@ -1,0 +1,75 @@
+@startuml use-cases
+left to right direction
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam backgroundColor white
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor #F4F8FB
+  BorderColor #1F5F84
+}
+
+title Diagrama de Casos de Uso — Estética Perto
+
+actor "Visitante" as V
+actor "Responsável pela\nEstética" as R
+actor "Administrador" as A
+
+rectangle "Estética Perto" {
+  package "Catálogo público" {
+    usecase "Consultar estéticas aprovadas" as UC01
+    usecase "Buscar e filtrar\n(nome, bairro, cidade,\nserviço, preço)" as UC02
+    usecase "Buscar por proximidade" as UC03
+    usecase "Visualizar estética" as UC04
+    usecase "Selecionar serviços e\nver total estimado" as UC05
+    usecase "Contatar pelo WhatsApp" as UC06
+  }
+
+  usecase "Autenticar-se" as UC08
+
+  package "Área do responsável" {
+    usecase "Criar conta" as UC07
+    usecase "Solicitar cadastro\nda estética" as UC09
+    usecase "Acompanhar situação e\nmotivo da recusa" as UC10
+    usecase "Editar dados, contato,\nendereço e localização" as UC11
+    usecase "Configurar horários" as UC12
+    usecase "Gerenciar serviços" as UC13
+  }
+
+  package "Área administrativa" {
+    usecase "Consultar painel\ne estatísticas" as UC14
+    usecase "Listar e filtrar\npor situação" as UC15
+    usecase "Analisar solicitação" as UC16
+    usecase "Aprovar" as UC17
+    usecase "Recusar com motivo" as UC18
+    usecase "Desativar estética" as UC19
+    usecase "Reativar estética" as UC20
+  }
+}
+
+V --> UC01
+V --> UC02
+V --> UC03
+V --> UC04
+V --> UC05
+V --> UC06
+UC06 ..> UC05 : <<include>>
+
+R --> UC07
+R --> UC08
+R --> UC09
+R --> UC10
+R --> UC11
+R --> UC12
+R --> UC13
+
+UC08 <-- A
+UC14 <-- A
+UC15 <-- A
+UC16 <-- A
+UC19 <-- A
+UC20 <-- A
+UC17 ..> UC16 : <<extend>>
+UC18 ..> UC16 : <<extend>>
+@enduml
