@@ -1,6 +1,8 @@
-# Estética Perto
+# DetailMap
 
-Plataforma web para descoberta de estéticas automotivas, desenvolvida como Trabalho de Conclusão de Curso.
+**Encontre a estética automotiva ideal perto de você.**
+
+Plataforma para encontrar estéticas automotivas, comparar serviços e entrar em contato diretamente pelo WhatsApp, desenvolvida como Trabalho de Conclusão de Curso.
 
 ## Sumário
 
@@ -28,7 +30,7 @@ Plataforma web para descoberta de estéticas automotivas, desenvolvida como Trab
 
 ## Descrição do projeto
 
-O **Estética Perto** é um diretório público de estéticas automotivas. Qualquer pessoa pode consultar os estabelecimentos cadastrados, comparar serviços e preços, verificar endereço e horário de funcionamento e iniciar uma conversa com a estética pelo WhatsApp, sem precisar criar conta.
+O **DetailMap** é uma plataforma web para descoberta de estéticas automotivas. Qualquer pessoa pode consultar os estabelecimentos cadastrados, comparar serviços e preços, verificar endereço e horário de funcionamento e iniciar uma conversa com a estética pelo WhatsApp, sem precisar criar conta.
 
 O sistema possui três perfis de uso:
 
@@ -278,7 +280,7 @@ A aplicação é um **monólito web** construído com Laravel no padrão **MVC**
 - **View:** templates Blade renderizados no servidor (SSR), com componentes reutilizáveis para layout, campos de formulário, cards e selos de situação.
 - **Controller:** controladores separados por área (público, `Owner` para o responsável e `Admin` para a administração), com validação em Form Requests e autorização por policies e pelo gate `access-admin`.
 
-No ambiente Docker Compose, o **nginx** recebe as requisições HTTP, entrega os arquivos estáticos de `public/` e repassa as demais ao **PHP-FPM**, que executa o Laravel. O Laravel acessa o **PostgreSQL** pela rede interna do Compose. O **Vite** (container `node`) serve CSS e JavaScript durante o desenvolvimento e gera os arquivos finais em `public/build`. O **pgAdmin** é apenas uma ferramenta local de consulta ao banco.
+No ambiente Docker Compose (projeto `detailmap`), o **nginx** recebe as requisições HTTP, entrega os arquivos estáticos de `public/` e repassa as demais ao **PHP-FPM**, que executa o Laravel. O Laravel acessa o **PostgreSQL** pela rede interna do Compose. O **Vite** (container `node`) serve CSS e JavaScript durante o desenvolvimento e gera os arquivos finais em `public/build`. O **pgAdmin** é apenas uma ferramenta local de consulta ao banco.
 
 A busca por proximidade usa a fórmula de Haversine executada no PostgreSQL, sem extensões geográficas, com todos os valores passados como parâmetros vinculados.
 
@@ -399,6 +401,23 @@ docker compose run --rm node npm run build
 
 **Não use `migrate:fresh` em um ambiente cujos dados você quer manter.**
 
+### Migração do nome do projeto Docker (DetailMap)
+
+O projeto Docker Compose passou a se chamar `detailmap` (antes `estetica-automotiva`). Os containers agora são `detailmap_php`, `detailmap_nginx`, `detailmap_node`, `detailmap_postgres` e `detailmap_pgadmin`, e os volumes `detailmap_pgdata` e `detailmap_pgadmin_data`.
+
+Como o nome dos volumes mudou, o primeiro `docker compose up` após essa atualização **cria volumes novos e vazios**. Os volumes antigos (`estetica-automotiva_estetica_pgdata` e `estetica-automotiva_estetica_pgadmin_data`) **não são apagados**. Para levar os dados existentes para os novos volumes, rode uma única vez, antes do primeiro `docker compose up`:
+
+```bash
+docker compose -p estetica-automotiva down   # para os containers antigos, sem apagar volumes
+docker volume create detailmap_pgdata
+docker volume create detailmap_pgadmin_data
+docker run --rm -v estetica-automotiva_estetica_pgdata:/from:ro -v detailmap_pgdata:/to alpine cp -a /from/. /to/
+docker run --rm -v estetica-automotiva_estetica_pgadmin_data:/from:ro -v detailmap_pgadmin_data:/to alpine cp -a /from/. /to/
+docker compose up -d
+```
+
+Depois de conferir que os dados aparecem na aplicação, os volumes antigos podem ser removidos manualmente com `docker volume rm`. Se você não precisa dos dados antigos, basta rodar `docker compose up -d` e `docker compose exec php php artisan migrate --seed`.
+
 ### Recriar o banco local
 
 ```bash
@@ -438,7 +457,7 @@ O projeto usa PostgreSQL; a ferramenta gráfica incluída é o **pgAdmin**. Ele 
 2. Entre com as credenciais locais definidas no `.env`:
    - **E-mail:** `admin@example.com` (`PGADMIN_EMAIL`)
    - **Senha:** `admin` (`PGADMIN_PASSWORD`)
-3. Na primeira inicialização, o servidor **Estética Perto (local)** já aparece cadastrado (arquivo [`docker/pgadmin/servers.json`](docker/pgadmin/servers.json)). Ao abri-lo, informe a senha do banco.
+3. Na primeira inicialização, o servidor **DetailMap (local)** já aparece cadastrado (arquivo [`docker/pgadmin/servers.json`](docker/pgadmin/servers.json)). Ao abri-lo, informe a senha do banco.
 4. Se o servidor não aparecer (por exemplo, em um volume do pgAdmin criado antes dessa configuração), cadastre-o em *Register → Server*:
 
 | Campo | Valor |

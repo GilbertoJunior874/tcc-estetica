@@ -12,7 +12,7 @@ skinparam class {
   HeaderBackgroundColor #F4F8FB
 }
 
-title Diagrama Entidade-Relacionamento — Estética Perto
+title Diagrama Entidade-Relacionamento — DetailMap
 
 entity "users" as users {
   * id : bigint <<PK>>
