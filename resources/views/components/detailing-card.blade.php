@@ -7,6 +7,18 @@
         </h3>
         <p class="mt-1 text-sm text-zinc-500">{{ $detailing->location }}</p>
 
+        @php($openNow = $detailing->relationLoaded('businessHours') ? $detailing->isOpenAt(now()) : null)
+        @if ($detailing->distance_label || $openNow !== null)
+            <p class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium">
+                @if ($detailing->distance_label)
+                    <span class="text-zinc-700">A {{ $detailing->distance_label }} de você</span>
+                @endif
+                @if ($openNow !== null)
+                    <span @class(['text-emerald-700' => $openNow, 'text-zinc-500' => ! $openNow])>{{ $openNow ? 'Aberta agora' : 'Fechada agora' }}</span>
+                @endif
+            </p>
+        @endif
+
         @if ($detailing->description)
             <p class="mt-3 line-clamp-2 text-sm text-zinc-600">{{ $detailing->description }}</p>
         @endif

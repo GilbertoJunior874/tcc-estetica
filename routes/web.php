@@ -18,6 +18,7 @@ Route::get('/', HomeController::class)->name('home');
 
 Route::get('/esteticas', [AutomotiveDetailingController::class, 'index'])->name('detailings.index');
 Route::get('/esteticas/{detailing}', [AutomotiveDetailingController::class, 'show'])->name('detailings.show');
+Route::get('/esteticas/{detailing}/whatsapp', [AutomotiveDetailingController::class, 'whatsapp'])->name('detailings.whatsapp')->middleware('throttle:30,1');
 
 Route::middleware('guest')->group(function () {
     Route::get('/cadastro', [RegisteredUserController::class, 'create'])->name('register');
