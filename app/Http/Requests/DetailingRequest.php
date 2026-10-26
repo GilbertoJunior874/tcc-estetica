@@ -26,6 +26,8 @@ class DetailingRequest extends FormRequest
             'neighborhood' => ['required', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:255'],
             'state' => ['required', 'string', Rule::in(self::STATES)],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
         ];
     }
 
@@ -44,6 +46,8 @@ class DetailingRequest extends FormRequest
             'neighborhood' => 'bairro',
             'city' => 'cidade',
             'state' => 'estado',
+            'latitude' => 'latitude',
+            'longitude' => 'longitude',
         ];
     }
 

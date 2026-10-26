@@ -55,4 +55,15 @@
             </div>
         </div>
     </fieldset>
+
+    <fieldset class="rounded-lg border border-zinc-200 bg-white p-5 sm:p-6">
+        <legend class="px-1 text-sm font-semibold">Localização no mapa</legend>
+        <p class="text-sm text-zinc-600">Opcional. Com as coordenadas, a estética aparece nas buscas por proximidade. Você pode copiá-las do Google Maps ou usar a localização deste dispositivo se estiver no estabelecimento.</p>
+        <div class="mt-5 grid gap-5 sm:grid-cols-2">
+            <x-field name="latitude" label="Latitude" :value="$detailing?->latitude" inputmode="decimal" placeholder="-22.8962000" />
+            <x-field name="longitude" label="Longitude" :value="$detailing?->longitude" inputmode="decimal" placeholder="-47.0521000" />
+        </div>
+        <button type="button" hidden data-geolocate data-latitude="#latitude" data-longitude="#longitude" class="mt-4 rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50">Usar a localização deste dispositivo</button>
+        <p data-geolocate-feedback aria-live="polite" class="mt-2 text-sm text-zinc-600"></p>
+    </fieldset>
 </div>
