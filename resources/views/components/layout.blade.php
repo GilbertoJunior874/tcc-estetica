@@ -9,6 +9,8 @@
 
         <title>{{ $title ? "{$title} · ".config('app.name') : config('app.name') }}</title>
 
+        <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+
         @fonts
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>

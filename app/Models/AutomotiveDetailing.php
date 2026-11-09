@@ -24,6 +24,7 @@ class AutomotiveDetailing extends Model
 
     protected $fillable = [
         'name',
+        'cnpj',
         'slug',
         'description',
         'phone',
@@ -195,6 +196,26 @@ class AutomotiveDetailing extends Model
         $time = $moment->format('H:i');
 
         return $time >= $hours->opens_at && $time < $hours->closes_at;
+    }
+
+    protected function cnpj(): Attribute
+    {
+        return Attribute::set(fn ($value) => $value === null ? null : preg_replace('/[^0-9]/', '', $value));
+    }
+
+    protected function postalCode(): Attribute
+    {
+        return Attribute::set(fn ($value) => preg_replace('/[^0-9]/', '', $value));
+    }
+
+    protected function formattedCnpj(): Attribute
+    {
+        return Attribute::get(fn () => $this->cnpj === null ? null : preg_replace('/^([0-9]{2})([0-9]{3})([0-9]{3})([0-9]{4})([0-9]{2})$/', '$1.$2.$3/$4-$5', $this->cnpj));
+    }
+
+    protected function formattedPostalCode(): Attribute
+    {
+        return Attribute::get(fn () => preg_replace('/^([0-9]{5})([0-9]{3})$/', '$1-$2', $this->postal_code));
     }
 
     protected function distanceLabel(): Attribute

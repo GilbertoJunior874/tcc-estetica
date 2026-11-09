@@ -7,6 +7,7 @@ use App\Models\AutomotiveDetailing;
 use App\Models\BusinessHour;
 use App\Models\Service;
 use App\Models\User;
+use App\Rules\Cnpj;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -46,10 +47,10 @@ class AutomotiveDetailingSeeder extends Seeder
 
     public function run(): void
     {
-        $admin = User::factory()->admin()->create(['name' => 'Administração', 'email' => 'admin@exemplo.test']);
-        $approvedOwner = User::factory()->create(['name' => 'Responsável Aprovada', 'email' => 'aprovada@exemplo.test']);
-        $pendingOwner = User::factory()->create(['name' => 'Responsável Pendente', 'email' => 'pendente@exemplo.test']);
-        $rejectedOwner = User::factory()->create(['name' => 'Responsável Recusada', 'email' => 'recusada@exemplo.test']);
+        $admin = User::where('email', 'admin@exemplo.test')->firstOr(fn () => User::factory()->admin()->create(['name' => 'Administração', 'email' => 'admin@exemplo.test']));
+        $approvedOwner = User::where('email', 'aprovada@exemplo.test')->firstOr(fn () => User::factory()->create(['name' => 'Responsável Aprovada', 'email' => 'aprovada@exemplo.test']));
+        $pendingOwner = User::where('email', 'pendente@exemplo.test')->firstOr(fn () => User::factory()->create(['name' => 'Responsável Pendente', 'email' => 'pendente@exemplo.test']));
+        $rejectedOwner = User::where('email', 'recusada@exemplo.test')->firstOr(fn () => User::factory()->create(['name' => 'Responsável Recusada', 'email' => 'recusada@exemplo.test']));
 
         $lastIndex = count(self::DETAILINGS) - 1;
 
@@ -80,7 +81,20 @@ class AutomotiveDetailingSeeder extends Seeder
     {
         [$name, $description, $street, $number, $complement, $neighborhood, $postalCode, $latitude, $longitude] = $data;
 
+        $cnpjBase = sprintf('00000000%04d', $index + 1);
+        $cnpj = $cnpjBase.Cnpj::checkDigits($cnpjBase);
+        $existing = AutomotiveDetailing::where('slug', Str::slug($name))->first();
+
+        if ($existing) {
+            if ($existing->cnpj === null) {
+                $existing->update(['cnpj' => $cnpj]);
+            }
+
+            return;
+        }
+
         $detailing = AutomotiveDetailing::factory()->create([
+            'cnpj' => $cnpj,
             ...$attributes,
             'name' => $name,
             'slug' => Str::slug($name),

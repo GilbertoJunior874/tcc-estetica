@@ -6,6 +6,7 @@ use App\Enums\DetailingStatus;
 use App\Models\AutomotiveDetailing;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class DetailingRegistrationTest extends TestCase
@@ -15,6 +16,7 @@ class DetailingRegistrationTest extends TestCase
     private function payload(array $overrides = []): array
     {
         return array_merge([
+            'cnpj' => '00000000000191',
             'name' => 'Lustro Fino Estética',
             'description' => 'Polimento e higienização com hora marcada.',
             'phone' => '(19) 3233-4455',
@@ -124,5 +126,90 @@ class DetailingRegistrationTest extends TestCase
 
         $this->get(route('detailings.index'))->assertDontSee('Lustro Fino Estética');
         $this->get(route('detailings.show', $user->automotiveDetailing))->assertNotFound();
+    }
+
+    #[DataProvider('validRegistrationData')]
+    public function test_registration_normalizes_valid_postal_code_and_cnpj(string $postalCode, string $cnpj): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->post(route('owner.detailing.store'), $this->payload(['postal_code' => $postalCode, 'cnpj' => $cnpj]))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('automotive_detailings', ['postal_code' => '85010000', 'cnpj' => '00000000000191']);
+        $this->assertSame('85010-000', AutomotiveDetailing::sole()->formatted_postal_code);
+        $this->assertSame('00.000.000/0001-91', AutomotiveDetailing::sole()->formatted_cnpj);
+    }
+
+    public static function validRegistrationData(): array
+    {
+        return [
+            ['85010-000', '00.000.000/0001-91'],
+            ['85010000', '00000000000191'],
+        ];
+    }
+
+    #[DataProvider('invalidRegistrationData')]
+    public function test_registration_rejects_invalid_postal_code_and_cnpj(string $field, mixed $value): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->post(route('owner.detailing.store'), $this->payload([$field => $value]))
+            ->assertSessionHasErrors($field);
+
+        $this->assertDatabaseCount('automotive_detailings', 0);
+    }
+
+    public static function invalidRegistrationData(): array
+    {
+        return [
+            'CEP obrigatório' => ['postal_code', ''],
+            'CEP incompleto' => ['postal_code', '85010-00'],
+            'CEP longo' => ['postal_code', '850100000'],
+            'CEP com letras' => ['postal_code', 'abc85010000'],
+            'CEP com símbolo inválido' => ['postal_code', '85010/000'],
+            'CEP em array' => ['postal_code', ['85010000']],
+            'CNPJ obrigatório' => ['cnpj', ''],
+            'CNPJ incompleto' => ['cnpj', '0000000000019'],
+            'CNPJ longo' => ['cnpj', '000000000001910'],
+            'CNPJ com letras' => ['cnpj', 'abc00000000000191'],
+            'CNPJ com símbolo inválido' => ['cnpj', '00.000.000/0001+91'],
+            'CNPJ com dígitos iguais' => ['cnpj', '11111111111111'],
+            'CNPJ zerado' => ['cnpj', '00000000000000'],
+            'Primeiro verificador incorreto' => ['cnpj', '00000000000181'],
+            'Segundo verificador incorreto' => ['cnpj', '00.000.000/0001-90'],
+            'CNPJ em array' => ['cnpj', ['00000000000191']],
+        ];
+    }
+
+    public function test_registration_rejects_duplicate_cnpj(): void
+    {
+        AutomotiveDetailing::factory()->create(['cnpj' => '00000000000191']);
+
+        $this->actingAs(User::factory()->create())
+            ->post(route('owner.detailing.store'), $this->payload(['cnpj' => '00.000.000/0001-91']))
+            ->assertSessionHasErrors(['cnpj' => 'Este CNPJ já está cadastrado em outra estética.']);
+
+        $this->assertDatabaseCount('automotive_detailings', 1);
+    }
+
+    public function test_registration_form_identifies_required_and_optional_fields(): void
+    {
+        $response = $this->actingAs(User::factory()->create())
+            ->get(route('owner.detailing.create'))
+            ->assertOk()
+            ->assertSee('Campos marcados com * são obrigatórios.');
+
+        $document = new \DOMDocument;
+        @$document->loadHTML('<?xml encoding="utf-8" ?>'.$response->getContent());
+        $xpath = new \DOMXPath($document);
+
+        foreach (['name', 'cnpj', 'whatsapp', 'postal_code', 'street', 'number', 'neighborhood', 'city', 'state'] as $field) {
+            $this->assertSame(1, $xpath->query("//*[@id='$field'][@required]")->length);
+            $this->assertStringContainsString('*', $xpath->query("//label[@for='$field']")->item(0)->textContent);
+        }
+
+        foreach (['description', 'phone', 'email', 'complement', 'latitude', 'longitude'] as $field) {
+            $this->assertSame(1, $xpath->query("//*[@id='$field'][not(@required)]")->length);
+            $this->assertStringNotContainsString('*', $xpath->query("//label[@for='$field']")->item(0)->textContent);
+        }
     }
 }

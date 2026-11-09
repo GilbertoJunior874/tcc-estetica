@@ -24,6 +24,7 @@ class BusinessManagementTest extends TestCase
     private function detailingPayload(array $overrides = []): array
     {
         return array_merge([
+            'cnpj' => '00000000000191',
             'name' => 'Novo Nome Estética',
             'description' => 'Descrição atualizada.',
             'phone' => null,
@@ -198,5 +199,63 @@ class BusinessManagementTest extends TestCase
             ->assertOk()
             ->assertSee('07:30 – 17:00')
             ->assertSee('Fechado');
+    }
+
+    public function test_edit_keeps_own_cnpj_and_formats_existing_values(): void
+    {
+        $user = $this->ownerWithDetailing(['cnpj' => '00000000000191', 'postal_code' => '85010000']);
+
+        $this->actingAs($user)->get(route('owner.detailing.edit'))
+            ->assertOk()
+            ->assertSee('Campos marcados com * são obrigatórios.')
+            ->assertSee('00.000.000/0001-91')
+            ->assertSee('85010-000');
+
+        $this->put(route('owner.detailing.update'), $this->detailingPayload(['cnpj' => '00.000.000/0001-91', 'postal_code' => '85010-000']))
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('00000000000191', $user->automotiveDetailing->fresh()->cnpj);
+        $this->assertSame('85010000', $user->automotiveDetailing->fresh()->postal_code);
+    }
+
+    public function test_edit_rejects_another_detailing_cnpj_even_with_forged_id(): void
+    {
+        $user = $this->ownerWithDetailing();
+        $other = AutomotiveDetailing::factory()->create(['cnpj' => '00000000000191']);
+        $original = $user->automotiveDetailing->cnpj;
+
+        $this->actingAs($user)->put(route('owner.detailing.update'), $this->detailingPayload([
+            'cnpj' => '00.000.000/0001-91',
+            'id' => $other->id,
+            'user_id' => $other->user_id,
+        ]))->assertSessionHasErrors('cnpj');
+
+        $this->assertSame($original, $user->automotiveDetailing->fresh()->cnpj);
+        $this->assertSame('00000000000191', $other->fresh()->cnpj);
+    }
+
+    public function test_edit_requires_valid_cnpj_and_postal_code_for_legacy_record(): void
+    {
+        $user = $this->ownerWithDetailing(['cnpj' => null]);
+
+        $this->actingAs($user)->put(route('owner.detailing.update'), $this->detailingPayload(['cnpj' => '', 'postal_code' => '']))
+            ->assertSessionHasErrors(['cnpj', 'postal_code']);
+
+        $this->put(route('owner.detailing.update'), $this->detailingPayload(['cnpj' => '00000000000190', 'postal_code' => '85010-00']))
+            ->assertSessionHasErrors(['cnpj', 'postal_code']);
+
+        $this->put(route('owner.detailing.update'), $this->detailingPayload())->assertSessionHasNoErrors();
+        $this->assertSame('00000000000191', $user->automotiveDetailing->fresh()->cnpj);
+    }
+
+    public function test_cnpj_is_formatted_in_private_panels_and_absent_from_public_page(): void
+    {
+        $user = $this->ownerWithDetailing(['cnpj' => '00000000000191', 'status' => DetailingStatus::Approved]);
+        $detailing = $user->automotiveDetailing;
+
+        $this->actingAs($user)->get(route('owner.dashboard'))->assertOk()->assertSee('00.000.000/0001-91');
+        $this->actingAs(User::factory()->admin()->create())
+            ->get(route('admin.detailings.show', $detailing))->assertOk()->assertSee('00.000.000/0001-91');
+        $this->get(route('detailings.show', $detailing))->assertOk()->assertDontSee('00.000.000/0001-91')->assertDontSee('00000000000191');
     }
 }

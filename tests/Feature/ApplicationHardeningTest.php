@@ -4,9 +4,13 @@ namespace Tests\Feature;
 
 use App\Enums\DetailingStatus;
 use App\Models\AutomotiveDetailing;
+use App\Models\BusinessHour;
+use App\Models\Service;
 use App\Models\User;
+use App\Rules\Cnpj;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;
 
 class ApplicationHardeningTest extends TestCase
@@ -50,6 +54,15 @@ class ApplicationHardeningTest extends TestCase
     public function test_seeder_creates_documented_demo_accounts(): void
     {
         $this->seed(DatabaseSeeder::class);
+        $counts = [User::count(), AutomotiveDetailing::count(), Service::count(), BusinessHour::count()];
+        $this->seed(DatabaseSeeder::class);
+        $this->assertSame($counts, [User::count(), AutomotiveDetailing::count(), Service::count(), BusinessHour::count()]);
+        $this->assertSame(12, AutomotiveDetailing::distinct()->count('cnpj'));
+
+        foreach (AutomotiveDetailing::all() as $detailing) {
+            $this->assertMatchesRegularExpression('/^[0-9]{14}$/', $detailing->cnpj);
+            $this->assertTrue(Validator::make(['cnpj' => $detailing->cnpj], ['cnpj' => new Cnpj])->passes());
+        }
 
         $this->assertTrue(User::where('email', 'admin@exemplo.test')->sole()->isAdmin());
 
@@ -129,5 +142,27 @@ class ApplicationHardeningTest extends TestCase
         $this->get(route('login'))
             ->assertSee('aria-invalid="true"', false)
             ->assertSee('aria-describedby="email-error"', false);
+    }
+
+    public function test_favicon_and_brand_are_present_in_public_owner_and_admin_pages(): void
+    {
+        config(['app.name' => 'DetailMap']);
+        $detailing = AutomotiveDetailing::factory()->create();
+        $routes = [route('home'), route('detailings.index'), route('detailings.show', $detailing), route('login'), route('register')];
+
+        foreach ($routes as $url) {
+            $this->get($url)->assertOk()->assertSee('DetailMap')->assertSee('href="'.asset('favicon.svg').'"', false);
+        }
+
+        $owner = User::factory()->create();
+        $this->actingAs($owner)->get(route('owner.detailing.create'))->assertOk()->assertSee(asset('favicon.svg'));
+        AutomotiveDetailing::factory()->for($owner, 'owner')->pending()->create();
+        $owner->unsetRelation('automotiveDetailing');
+
+        foreach (['owner.dashboard', 'owner.detailing.edit'] as $route) {
+            $this->get(route($route))->assertOk()->assertSee(asset('favicon.svg'));
+        }
+
+        $this->actingAs(User::factory()->admin()->create())->get(route('admin.dashboard'))->assertOk()->assertSee(asset('favicon.svg'));
     }
 }

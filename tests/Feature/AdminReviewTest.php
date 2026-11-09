@@ -216,7 +216,7 @@ class AdminReviewTest extends TestCase
 
         $this->actingAs($owner)
             ->put(route('owner.detailing.update'), [
-                ...$detailing->only(['name', 'description', 'whatsapp', 'postal_code', 'street', 'neighborhood', 'city', 'state']),
+                ...$detailing->only(['cnpj', 'name', 'description', 'whatsapp', 'postal_code', 'street', 'neighborhood', 'city', 'state']),
                 'number' => '250',
             ])
             ->assertRedirect(route('owner.dashboard'));
@@ -311,7 +311,7 @@ class AdminReviewTest extends TestCase
 
         $this->actingAs($detailing->owner)
             ->put(route('owner.detailing.update'), [
-                ...$detailing->only(['name', 'whatsapp', 'postal_code', 'street', 'number', 'neighborhood', 'city', 'state']),
+                ...$detailing->only(['cnpj', 'name', 'whatsapp', 'postal_code', 'street', 'number', 'neighborhood', 'city', 'state']),
                 'status' => 'approved',
                 'reviewed_by' => 1,
             ]);
