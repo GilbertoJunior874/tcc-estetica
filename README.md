@@ -103,6 +103,7 @@ Centralizar as informações das estéticas em um único catálogo reduz o esfor
 | RN15 | A plataforma não realiza pagamento, pedido, agendamento nem chat interno. |
 | RN16 | A localização do visitante é opcional, usada apenas na busca corrente e nunca armazenada. |
 | RN17 | Contas administrativas não cadastram estéticas. |
+| RN18 | CNPJ é obrigatório no cadastro e na edição, deve ter dígitos verificadores válidos e ser único entre estéticas. É restrito ao responsável e à administração. CNPJ e CEP são armazenados somente com dígitos; CEP deve conter exatamente 8 dígitos. |
 
 ## Requisitos Funcionais
 
@@ -119,7 +120,7 @@ Centralizar as informações das estéticas em um único catálogo reduz o esfor
 | RF09 | Abrir uma conversa no WhatsApp da estética com mensagem contendo os serviços selecionados, os preços e o total estimado. | Visitante |
 | RF10 | Criar conta de responsável com nome, e-mail e senha. | Responsável |
 | RF11 | Entrar e sair da plataforma. | Responsável e administrador |
-| RF12 | Solicitar o cadastro da estética informando empresa, contato, endereço e, opcionalmente, coordenadas geográficas. | Responsável |
+| RF12 | Solicitar o cadastro da estética informando empresa com CNPJ, contato, endereço com CEP e, opcionalmente, coordenadas geográficas. | Responsável |
 | RF13 | Acompanhar a situação do cadastro e visualizar o motivo da recusa. | Responsável |
 | RF14 | Editar dados da empresa, contato, endereço e localização. | Responsável |
 | RF15 | Configurar os horários de funcionamento de cada dia da semana. | Responsável |
@@ -433,7 +434,8 @@ docker compose exec php php artisan migrate:fresh --seed
 - **Banco principal:** `estetica`.
 - **Banco de testes:** `estetica_testing`, criado automaticamente na primeira inicialização do volume por [`docker/postgres/create-testing-database.sql`](docker/postgres/create-testing-database.sql).
 - **Estrutura:** definida em [`database/migrations/`](database/migrations/). Além das tabelas do domínio (`users`, `automotive_detailings`, `services`, `business_hours`), o Laravel usa `sessions`, `cache`, `jobs` e `password_reset_tokens`.
-- **Seed:** [`database/seeders/`](database/seeders/) cria 12 estéticas fictícias em Campinas (SP): 9 aprovadas, 1 inativa, 1 pendente e 1 recusada, cada uma com 4 a 10 serviços (alguns inativos), horários e coordenadas, além das contas listadas em [Contas fictícias](#contas-fictícias-de-desenvolvimento).
+- **Dados cadastrais:** `automotive_detailings.cnpj` é `varchar(14)` único e nullable para preservar registros anteriores; novos cadastros e edições exigem CNPJ válido. Os formulários aplicam máscaras de CEP/CNPJ e identificam os campos obrigatórios; descrição, telefone, e-mail e complemento permanecem opcionais. Coordenadas são opcionais, mas devem ser informadas em conjunto.
+- **Seed:** [`database/seeders/`](database/seeders/) cria 12 estéticas fictícias em Campinas (SP): 9 aprovadas, 1 inativa, 1 pendente e 1 recusada, cada uma com 4 a 10 serviços (alguns inativos), horários e coordenadas, além das contas listadas em [Contas fictícias](#contas-fictícias-de-desenvolvimento). Os CNPJs são sintéticos, válidos matematicamente e exclusivos para desenvolvimento/testes. Reexecutar o seed preserva os registros existentes sem duplicar contas, estéticas, serviços ou horários.
 
 Comandos:
 

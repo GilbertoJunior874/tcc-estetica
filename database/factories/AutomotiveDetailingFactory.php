@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\DetailingStatus;
 use App\Models\AutomotiveDetailing;
+use App\Rules\Cnpj;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -16,14 +17,17 @@ class AutomotiveDetailingFactory extends Factory
     {
         $name = fake()->unique()->company().' Estética Automotiva';
 
+        $cnpjBase = '00'.fake()->unique()->numerify('##########');
+
         return [
             'name' => $name,
+            'cnpj' => $cnpjBase.Cnpj::checkDigits($cnpjBase),
             'slug' => Str::slug($name),
             'description' => fake()->paragraph(),
             'phone' => fake()->numerify('(19) 3###-####'),
             'whatsapp' => fake()->numerify('(19) 9####-####'),
             'email' => fake()->unique()->safeEmail(),
-            'postal_code' => fake()->numerify('130##-###'),
+            'postal_code' => fake()->numerify('130#####'),
             'street' => fake()->streetName(),
             'number' => (string) fake()->buildingNumber(),
             'complement' => null,

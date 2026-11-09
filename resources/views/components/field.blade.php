@@ -1,4 +1,4 @@
-@props(['name', 'label', 'type' => 'text', 'value' => null, 'hint' => null])
+@props(['name', 'label', 'type' => 'text', 'value' => null, 'hint' => null, 'markRequired' => false])
 
 @php
     $describedBy = collect([$hint ? "{$name}-hint" : null, $errors->has($name) ? "{$name}-error" : null])->filter()->implode(' ');
@@ -10,7 +10,7 @@
 @endphp
 
 <div>
-    <label for="{{ $name }}" class="block text-sm font-medium text-zinc-800">{{ $label }}</label>
+    <label for="{{ $name }}" class="block text-sm font-medium text-zinc-800">{{ $label }}@if ($markRequired && $attributes->has('required')) <span aria-hidden="true">*</span>@endif</label>
 
     @if ($type === 'textarea')
         <textarea id="{{ $name }}" name="{{ $name }}" rows="4" @if ($describedBy) aria-describedby="{{ $describedBy }}" @endif @if ($errors->has($name)) aria-invalid="true" @endif {{ $attributes->class($inputClass) }}>{{ old($name, $value) }}</textarea>

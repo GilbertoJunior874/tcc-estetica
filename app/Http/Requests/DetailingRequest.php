@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\Cnpj;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -14,12 +15,13 @@ class DetailingRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'cnpj' => ['bail', 'required', new Cnpj, Rule::unique('automotive_detailings', 'cnpj')->ignore($this->isMethod('put') ? $this->user()->automotiveDetailing : null)],
             'name' => ['required', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:1000'],
             'phone' => ['nullable', 'string', 'regex:'.self::PHONE],
             'whatsapp' => ['required', 'string', 'regex:'.self::PHONE],
             'email' => ['nullable', 'string', 'email', 'max:255'],
-            'postal_code' => ['required', 'string', 'regex:/^\d{5}-?\d{3}$/'],
+            'postal_code' => ['required', 'string', 'regex:/^[0-9]{8}$/'],
             'street' => ['required', 'string', 'max:255'],
             'number' => ['required', 'string', 'max:20'],
             'complement' => ['nullable', 'string', 'max:255'],
@@ -35,6 +37,7 @@ class DetailingRequest extends FormRequest
     {
         return [
             'name' => 'nome da estética',
+            'cnpj' => 'CNPJ',
             'description' => 'descrição',
             'phone' => 'telefone',
             'whatsapp' => 'WhatsApp',
@@ -51,8 +54,21 @@ class DetailingRequest extends FormRequest
         ];
     }
 
+    public function messages(): array
+    {
+        return ['cnpj.unique' => 'Este CNPJ já está cadastrado em outra estética.'];
+    }
+
     protected function prepareForValidation(): void
     {
+        foreach (['postal_code' => '/^(?:[0-9]{8}|[0-9]{5}-[0-9]{3})$/', 'cnpj' => '/^(?:[0-9]{14}|[0-9]{2}\.[0-9]{3}\.[0-9]{3}\/[0-9]{4}-[0-9]{2})$/'] as $field => $pattern) {
+            $value = $this->input($field);
+
+            if (is_string($value) && preg_match($pattern, $value)) {
+                $this->merge([$field => preg_replace('/[^0-9]/', '', $value)]);
+            }
+        }
+
         $this->merge([
             'state' => $this->filled('state') ? strtoupper($this->string('state')) : null,
         ]);

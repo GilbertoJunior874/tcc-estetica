@@ -64,7 +64,7 @@
                         <div>
                             <dt class="text-zinc-500">Endereço</dt>
                             <dd class="mt-0.5">{{ $detailing->street_address }}</dd>
-                            <dd>{{ $detailing->city }} – {{ $detailing->state }}, {{ $detailing->postal_code }}</dd>
+                            <dd>{{ $detailing->city }} – {{ $detailing->state }}, {{ $detailing->formatted_postal_code }}</dd>
                         </div>
                         @if ($detailing->phone)
                             <div>

@@ -32,6 +32,7 @@ entity "automotive_detailings" as detailings {
   user_id : bigint <<FK, UK>>
   * name : varchar
   * slug : varchar <<UK>>
+  cnpj : varchar(14) <<UK>>
   description : text
   phone : varchar(20)
   whatsapp : varchar(20)

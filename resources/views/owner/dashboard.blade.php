@@ -31,9 +31,13 @@
             </div>
             <dl class="mt-4 grid gap-4 text-sm sm:grid-cols-2">
                 <div>
+                    <dt class="text-zinc-500">CNPJ</dt>
+                    <dd class="mt-0.5">{{ $detailing->formatted_cnpj ?: 'Não informado' }}</dd>
+                </div>
+                <div>
                     <dt class="text-zinc-500">Endereço</dt>
                     <dd class="mt-0.5">{{ $detailing->street_address }}</dd>
-                    <dd>{{ $detailing->city }} – {{ $detailing->state }}, {{ $detailing->postal_code }}</dd>
+                    <dd>{{ $detailing->city }} – {{ $detailing->state }}, {{ $detailing->formatted_postal_code }}</dd>
                 </div>
                 <div>
                     <dt class="text-zinc-500">Contato</dt>

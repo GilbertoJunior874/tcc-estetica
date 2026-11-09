@@ -17,6 +17,10 @@
             <section class="rounded-lg border border-zinc-200 bg-white p-5">
                 <h2 class="font-semibold">Empresa</h2>
                 <dl class="mt-4 grid gap-4 text-sm sm:grid-cols-2">
+                    <div>
+                        <dt class="text-zinc-500">CNPJ</dt>
+                        <dd class="mt-0.5">{{ $detailing->formatted_cnpj ?: 'Não informado' }}</dd>
+                    </div>
                     <div class="sm:col-span-2">
                         <dt class="text-zinc-500">Descrição</dt>
                         <dd class="mt-0.5 whitespace-pre-line">{{ $detailing->description ?: 'Não informada.' }}</dd>
@@ -55,7 +59,7 @@
                     <div class="sm:col-span-2">
                         <dt class="text-zinc-500">Endereço</dt>
                         <dd class="mt-0.5">{{ $detailing->street_address }}</dd>
-                        <dd>{{ $detailing->city }} – {{ $detailing->state }}, {{ $detailing->postal_code }}</dd>
+                        <dd>{{ $detailing->city }} – {{ $detailing->state }}, {{ $detailing->formatted_postal_code }}</dd>
                     </div>
                 </dl>
             </section>

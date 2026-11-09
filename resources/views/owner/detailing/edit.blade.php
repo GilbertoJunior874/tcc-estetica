@@ -1,7 +1,7 @@
 <x-owner-layout title="Dados da estética">
     <div class="max-w-3xl">
         <h1 class="text-2xl font-bold tracking-tight">Dados da estética</h1>
-        <p class="mt-2 text-sm text-zinc-600">Essas informações aparecem na página pública da estética.</p>
+        <p class="mt-2 text-sm text-zinc-600">Os dados públicos aparecem na página da estética. O CNPJ é restrito ao responsável e à administração.</p>
 
         <form method="post" action="{{ route('owner.detailing.update') }}" class="mt-8">
             @csrf

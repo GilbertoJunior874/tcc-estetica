@@ -77,3 +77,37 @@ if (selection) {
     selection.addEventListener('change', update);
     update();
 }
+
+const masks = {
+    'postal-code': (digits) => digits.replace(/^([0-9]{5})([0-9])/, '$1-$2'),
+    cnpj: (digits) => digits
+        .replace(/^([0-9]{2})([0-9])/, '$1.$2')
+        .replace(/^([0-9]{2})\.([0-9]{3})([0-9])/, '$1.$2.$3')
+        .replace(/\.([0-9]{3})([0-9])/, '.$1/$2')
+        .replace(/([0-9]{4})([0-9])/, '$1-$2'),
+};
+
+document.querySelectorAll('[data-mask]').forEach((input) => {
+    const mask = masks[input.dataset.mask];
+    const limit = input.dataset.mask === 'cnpj' ? 14 : 8;
+
+    const update = () => {
+        const position = input.selectionStart ?? input.value.length;
+        const digitsBefore = input.value.slice(0, position).replace(/[^0-9]/g, '').length;
+        const digits = input.value.replace(/[^0-9]/g, '').slice(0, limit);
+        input.value = mask(digits);
+
+        let cursor = 0;
+        let count = 0;
+
+        while (cursor < input.value.length && count < digitsBefore) {
+            if (/[0-9]/.test(input.value[cursor])) count++;
+            cursor++;
+        }
+
+        input.setSelectionRange(cursor, cursor);
+    };
+
+    input.addEventListener('input', update);
+    update();
+});

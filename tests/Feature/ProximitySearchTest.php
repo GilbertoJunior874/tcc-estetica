@@ -115,7 +115,7 @@ class ProximitySearchTest extends TestCase
 
         $this->actingAs($detailing->owner)
             ->put(route('owner.detailing.update'), [
-                ...$detailing->only(['name', 'whatsapp', 'postal_code', 'street', 'number', 'neighborhood', 'city', 'state']),
+                ...$detailing->only(['cnpj', 'name', 'whatsapp', 'postal_code', 'street', 'number', 'neighborhood', 'city', 'state']),
                 'latitude' => '-22.9000000',
                 'longitude' => '-47.0600000',
             ])
@@ -125,7 +125,7 @@ class ProximitySearchTest extends TestCase
 
         $this->actingAs($detailing->owner)
             ->put(route('owner.detailing.update'), [
-                ...$detailing->only(['name', 'whatsapp', 'postal_code', 'street', 'number', 'neighborhood', 'city', 'state']),
+                ...$detailing->only(['cnpj', 'name', 'whatsapp', 'postal_code', 'street', 'number', 'neighborhood', 'city', 'state']),
                 'latitude' => '-95',
                 'longitude' => null,
             ])
