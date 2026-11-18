@@ -516,17 +516,60 @@ Medidas adotadas no escopo do projeto:
 
 ### Configuração para produção
 
-O projeto não inclui infraestrutura de produção. Uma publicação exigiria, no mínimo:
+A imagem de produção é definida em `Dockerfile.vercel`. A configuração mantém:
 
 - `APP_ENV=production` e `APP_DEBUG=false` (com `APP_DEBUG=true`, detalhes internos aparecem nas páginas de erro);
-- `APP_KEY` própria, gerada no servidor;
-- credenciais fortes para banco e pgAdmin, diferentes das de desenvolvimento;
+- `APP_KEY` própria, gerada localmente e configurada como segredo da Vercel;
+- credenciais fortes para o banco, diferentes das de desenvolvimento; pgAdmin é exclusivo do ambiente local;
 - HTTPS, com `SESSION_SECURE_COOKIE=true`;
-- PostgreSQL sem exposição pública e pgAdmin desativado ou protegido;
+- PostgreSQL gerenciado com TLS e credenciais próprias; pgAdmin somente no ambiente local;
 - segredos fora do Git (variáveis de ambiente ou cofre de segredos);
 - `npm run build` em vez do servidor do Vite;
-- volumes persistentes e rotina de backup do banco;
+- persistência das sessões e do cache no PostgreSQL gerenciado externo;
 - não executar o seeder de demonstração.
+
+## Deploy
+
+### Produção
+
+A arquitetura usa um único container HTTP Laravel no Vercel Container Runtime e PostgreSQL gerenciado externo. Não executa Compose, PostgreSQL, pgAdmin, nginx, PHP-FPM ou Vite dev server na Vercel. Não há uploads que exijam armazenamento externo.
+
+`Dockerfile.vercel` é detectado automaticamente pelo preset Container, sem necessidade de `vercel.json`. O build usa Composer sem dependências de desenvolvimento e Node 22 para compilar CSS, JavaScript e fontes. A imagem final usa FrankenPHP com PHP 8.4, extensões PostgreSQL e mbstring, configuração de produção do PHP e cabeçalhos de segurança. Executa como usuário sem privilégios e escuta em `:$PORT` (padrão `8080`); o HTTPS termina na Vercel. O health check existente é `/up`.
+
+URL de produção: https://detailmap-six.vercel.app. Projeto: `anvero/detailmap`. Banco: Neon `detailmap-db`, conectado pela integração da Vercel.
+
+Configure na Vercel: `APP_NAME`, `APP_ENV`, `APP_DEBUG`, `APP_KEY`, `APP_URL`, `LOG_CHANNEL`, `LOG_LEVEL`, `DB_CONNECTION`, `DB_URL`, `DB_SSLMODE`, `DB_SSLROOTCERT`, `SESSION_DRIVER`, `SESSION_SECURE_COOKIE`, `CACHE_STORE`, `QUEUE_CONNECTION`, `MAIL_MAILER` e `PORT`. Use `APP_ENV=production`, `APP_DEBUG=false`, logs em `stderr`, sessão e cache em `database`, cookies seguros e filas em `sync`. `DB_URL` deve usar TLS com verificação do certificado e do hostname (`sslmode=verify-full` e `sslrootcert=/etc/ssl/certs/ca-certificates.crt`). O PostgreSQL também aceita `DATABASE_URL` como alternativa, para a integração Neon. `APP_KEY` e `DB_URL` são Secrets; não coloque seus valores no código. `.vercelignore` exclui credenciais, dependências locais e logs do upload.
+
+Aplique migrations uma vez, de forma controlada, usando a imagem e um arquivo privado de variáveis fora do repositório:
+
+```bash
+docker build -f Dockerfile.vercel -t detailmap-vercel .
+docker run --rm --env-file /caminho/privado/detailmap.env --entrypoint php detailmap-vercel artisan migrate --force
+```
+
+O startup não executa migrations nem seeders. Não execute o seeder de desenvolvimento em produção; contas de demonstração devem usar credenciais próprias e seguras.
+
+Em produção, `DB_EMULATE_PREPARES=true` habilita a compatibilidade do PDO com o pool de conexões do Neon, incluindo as transações do cache e do limitador de tentativas de login. Para migrations, use a conexão direta (`DATABASE_URL_UNPOOLED`) com TLS. O teste de autenticação também exercita o cache em banco, além do cache em memória usado pelo restante da suíte.
+
+O projeto Vercel é `anvero/detailmap`, sem integração Git habilitada. Novas versões são publicadas pela CLI, a partir do checkout revisado:
+
+```bash
+npx --yes vercel@65.12.1 link --project detailmap --scope anvero --yes
+npx --yes vercel@65.12.1 project inspect --non-interactive --scope anvero
+npx --yes vercel@65.12.1 deploy --prod --skip-domain --scope anvero
+# Use a URL retornada pelo comando anterior:
+npx --yes vercel@65.12.1 curl /up --deployment <url-do-deploy> --scope anvero
+npx --yes vercel@65.12.1 curl / --deployment <url-do-deploy> --scope anvero
+npx --yes vercel@65.12.1 promote <url-do-deploy> --scope anvero --yes
+```
+
+Valide o deploy de produção antes de promover a mesma versão para o domínio público. Pushes para `main` não disparam deploy automaticamente neste fluxo. A conta administradora inicial foi criada separadamente do seeder; as credenciais ficam no arquivo local privado `.vercel/admin-access.txt`, ignorado pelo Git e pelo deploy. O catálogo de produção não carrega automaticamente contas ou estéticas fictícias.
+
+Validação inicial em 18/11/2026: 168 testes automatizados passaram, com 696 verificações. O navegador confirmou acesso público HTTPS, cadastro, login/logout, sessão persistente, cadastro de estética e serviço, aprovação administrativa, catálogo, seleção de serviços e redirecionamento ao WhatsApp, além do layout mobile. Os registros temporários da verificação foram removidos. A publicação terminou com status `READY`, sem erros de runtime ou respostas HTTP 500 nos testes finais.
+
+### Desenvolvimento
+
+O ambiente local continua usando `docker compose`, com nginx, PHP-FPM, Node/Vite, PostgreSQL e pgAdmin. Seus Dockerfiles e serviços permanecem separados da imagem de produção.
 
 ## Rotas e fluxos principais
 
@@ -589,4 +632,4 @@ Limitações conhecidas:
 - as coordenadas são informadas manualmente pelo responsável (não há geocodificação automática do endereço);
 - o cálculo de "aberta agora" considera o fuso `America/Sao_Paulo` e não trata horários que atravessam a meia-noite;
 - não há envio de imagens das estéticas;
-- não há configuração de implantação em produção.
+- a execução pública depende do PostgreSQL gerenciado e das variáveis configuradas na Vercel.

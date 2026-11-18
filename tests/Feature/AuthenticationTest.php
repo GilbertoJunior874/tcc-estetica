@@ -68,6 +68,26 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_login_works_with_the_database_rate_limiter(): void
+    {
+        config(['cache.default' => 'database']);
+        $user = User::factory()->create();
+
+        for ($attempt = 0; $attempt < 2; $attempt++) {
+            $this->post(route('login'), [
+                'email' => $user->email,
+                'password' => 'password',
+            ])->assertRedirect(route('owner.dashboard'));
+
+            $this->assertAuthenticatedAs($user);
+
+            $this->post(route('logout'))->assertRedirect(route('home'));
+            $this->assertGuest();
+        }
+
+        $this->assertDatabaseHas('cache', ['value' => 'i:2;']);
+    }
+
     public function test_owner_can_logout(): void
     {
         $this->actingAs(User::factory()->create())
