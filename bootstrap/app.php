@@ -12,6 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        if (env('VERCEL')) {
+            $middleware->trustProxies(at: '*');
+        }
+
         $middleware->redirectUsersTo(fn (Request $request) => route($request->user()?->isAdmin() ? 'admin.dashboard' : 'owner.dashboard'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
